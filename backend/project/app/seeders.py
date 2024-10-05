@@ -13,26 +13,35 @@ from database.tables import (
     Supplier,
     Product,
     Order,
+    User,
 )
 from database.database import SessionLocal
 from database.database import engine, Base
-from database.tables import *
 from schemas.schemas import UserCreate
 from controllers.auth_controller import register_new_user
-from sqlalchemy.orm import Session
+
 
 def create_tables():
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)
     print("Tables created successfully.")
 
+
 def create_main_user():
     user = UserCreate(username="root", email="root@root.root", password="root")
     db = SessionLocal()
-    register_new_user(user, db)
+    
+    # Check if user already exists
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    
+    if existing_user is None:
+        register_new_user(user, db)
+        print("Main user created.")
+    else:
+        print("Main user already exists.")
 
-    
-    
+    db.close()
+
 
 async def clear_db(db: Session):
     db.execute(text("DELETE FROM order_product"))
@@ -49,10 +58,10 @@ async def seed():
     db = SessionLocal()
     try:
         await clear_db(db)
-        await seed_suppliers(db, 10000)
-        await seed_categories(db, 10000)
-        await seed_products(db, 200000)
-        await seed_orders(db, 10000)
+        await seed_suppliers(db, 50)
+        await seed_categories(db, 10)
+        await seed_products(db, 1000)
+        await seed_orders(db, 50)
     finally:
         db.close()
 
@@ -62,5 +71,5 @@ async def seed():
 
 if __name__ == "__main__":
     create_tables()
-    create_main_user()
+    #create_main_user()
     asyncio.run(seed())

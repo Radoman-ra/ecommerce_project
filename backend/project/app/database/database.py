@@ -6,18 +6,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-
-env_path = Path(__file__).resolve()
-while env_path.name != '.env' and env_path.parent != env_path:
-    env_path = env_path.parent
-env_path = env_path / ".env"
-
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 MYSQL_USER = os.getenv("MYSQL_USER")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
-MYSQL_HOST = os.getenv("MYSQL_HOST")
-MYSQL_PORT = os.getenv("MYSQL_PORT")
+MYSQL_HOST = os.getenv("MYSQL_HOST", "db")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 MYSQL_ROOT_PASSWORD = os.getenv("MYSQL_ROOT_PASSWORD")
 
