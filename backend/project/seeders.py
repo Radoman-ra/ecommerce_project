@@ -3,22 +3,22 @@ import time
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from database.database import get_db
-from database.seeders.categories import seed_categories
-from database.seeders.suppliers import seed_suppliers
-from database.seeders.products import seed_products
-from database.seeders.orders import seed_orders
-from database.tables import (
+from app.database.database import get_db
+from app.database.seeders.categories import seed_categories
+from app.database.seeders.suppliers import seed_suppliers
+from app.database.seeders.products import seed_products
+from app.database.seeders.orders import seed_orders
+from app.database.tables import (
     Category,
     Supplier,
     Product,
     Order,
     User,
 )
-from database.database import SessionLocal
-from database.database import engine, Base
-from schemas.schemas import UserCreate
-from controllers.auth_controller import register_new_user
+from app.database.database import SessionLocal
+from app.database.database import engine, Base
+from app.schemas.schemas import UserCreate
+from app.controllers.auth_controller import register_new_user
 
 
 def create_tables():
@@ -61,7 +61,7 @@ async def seed():
         await seed_suppliers(db, 50)
         await seed_categories(db, 10)
         await seed_products(db, 1000)
-        await seed_orders(db, 50)
+        #await seed_orders(db, 50)
     finally:
         db.close()
 

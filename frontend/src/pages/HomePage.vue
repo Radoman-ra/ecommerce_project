@@ -1,6 +1,5 @@
 <template>
   <div class="home-page">
-    <AuthButtons />
     <SearchProducts />
   </div>
 </template>

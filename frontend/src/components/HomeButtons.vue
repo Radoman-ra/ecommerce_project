@@ -16,7 +16,6 @@ import Cookies from 'js-cookie'
 export default defineComponent({
   setup() {
     const router = useRouter()
-
     const isAuthenticated = !!Cookies.get('access_token')
 
     const goToLogin = () => router.push('/login')
@@ -46,26 +45,21 @@ export default defineComponent({
 .auth-buttons {
   display: flex;
   gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: flex-start;
+  margin-bottom: 20px;
 }
 
 .btn {
   padding: 10px 20px;
-  background-color: #f0f0f0;
-  border: none;
-  border-radius: 20px;
-  color: #333;
+  background-color: #007bff;
+  border-radius: 5px;
+  color: white;
   font-size: 16px;
   cursor: pointer;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
 }
 
 .btn:hover {
-  background-color: #d8e2dc;
-  color: #000;
+  background-color: #0056b3;
 }
 </style>
