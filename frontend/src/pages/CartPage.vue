@@ -8,7 +8,6 @@
           <button class="design-button" @click="checkout">Checkout</button>
         </div>
       </div>
-      <h1>Your Cart</h1>
       <div v-if="cartItems.length === 0">Your cart is empty.</div>
       <ul v-else class="cart-list">
         <li v-for="item in cartItems" :key="item.id" class="cart-item">
@@ -93,21 +92,19 @@ export default defineComponent({
     }
 
     const handleInput = (item: { id: number; quantity: number; availableQuantity: number }) => {
-      // Clear any existing timeout
       timeoutIds.value.forEach((id) => clearTimeout(id))
       timeoutIds.value = []
 
-      // Set a new timeout to apply the value
       const timeoutId = setTimeout(() => {
         if (item.quantity < 1) {
-          item.quantity = 1 // Set to minimum quantity of 1
+          item.quantity = 1
         } else if (item.quantity > item.availableQuantity) {
-          item.quantity = item.availableQuantity // Limit to max available quantity
+          item.quantity = item.availableQuantity
         }
         updateLocalStorage()
-      }, 500) // Delay of 500ms
+      }, 500)
 
-      timeoutIds.value.push(timeoutId) // Store timeout ID
+      timeoutIds.value.push(timeoutId)
     }
 
     const checkout = async () => {
@@ -120,7 +117,7 @@ export default defineComponent({
         products
       }
 
-      console.log('Order payload:', order) // Debug: Log the order object
+      console.log('Order payload:', order)
 
       const getAccessToken = () => {
         const cookieString = document.cookie
@@ -130,7 +127,7 @@ export default defineComponent({
       }
 
       const token = getAccessToken()
-      console.log('JWT token:', token) // Debug: Log the JWT token
+      console.log('JWT token:', token)
 
       try {
         const response = await fetch('http://127.0.0.1:8000/api/orders/', {
@@ -142,11 +139,11 @@ export default defineComponent({
           body: JSON.stringify(order)
         })
 
-        console.log('Response status:', response.status) // Debug: Log the response status
-        console.log('Response headers:', response.headers) // Debug: Log the response headers
+        console.log('Response status:', response.status)
+        console.log('Response headers:', response.headers)
 
         const responseData = await response.json().catch(() => null)
-        console.log('Response body:', responseData) // Debug: Log the response body
+        console.log('Response body:', responseData)
 
         if (response.status === 401) {
           alert('First you need to log in to your account')
@@ -171,7 +168,6 @@ export default defineComponent({
       router.push('/')
     }
 
-    // Fetch available quantities for products in the cart
     const fetchAvailableQuantities = async () => {
       try {
         const productIds = cartItems.value.map((item: { id: number }) => item.id).join(',')
@@ -179,7 +175,6 @@ export default defineComponent({
           `http://127.0.0.1:8000/api/products/available-quantities?ids=${productIds}`
         )
 
-        // Assuming the response contains an array of objects like [{id: 1, available_quantity: 10}, ...]
         response.data.forEach((product: { id: number; quantity: number }) => {
           const cartItem = cartItems.value.find((item: { id: number }) => item.id === product.id)
           if (cartItem) {
@@ -191,7 +186,6 @@ export default defineComponent({
       }
     }
 
-    // Fetch available quantities when the component is mounted
     fetchAvailableQuantities()
 
     return {
@@ -225,8 +219,8 @@ export default defineComponent({
   background-color: #f8f9fa;
   width: 80%;
   max-width: 800px;
-  border-radius: 25px; /* Закругленные углы */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Тень для эффекта объема */
+  border-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .top-bar {
@@ -236,7 +230,7 @@ export default defineComponent({
   width: 100%;
   padding: 10px;
   background-color: #f0f0f0;
-  border-radius: 15px; /* Закругленные углы внутри контейнера */
+  border-radius: 15px;
 }
 
 .cart-list {
@@ -245,8 +239,8 @@ export default defineComponent({
 }
 
 .cart-item {
-  display: flex; /* Use flex for layout */
-  align-items: center; /* Align items vertically */
+  display: flex;
+  align-items: center;
   background-color: #ffffff;
   padding: 15px;
   margin: 10px 0;
@@ -255,19 +249,22 @@ export default defineComponent({
 }
 
 .cart-image {
-  width: 80px; /* Increased width for the product image */
-  height: 80px; /* Increased height for the product image */
-  border-radius: 5px; /* Optional: rounded corners */
-  margin-right: 15px; /* Space between image and text */
+  width: 80px;
+  height: 80px;
+  border-radius: 5px;
+  margin-right: 15px;
 }
 
 .cart-details {
-  flex-grow: 1; /* Allow details to take up remaining space */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
 }
 
 .quantity-controls {
-  display: flex; /* Use flex for layout */
-  align-items: center; /* Align items vertically */
+  display: flex;
+  align-items: center;
 }
 
 .quantity-button {
@@ -276,7 +273,7 @@ export default defineComponent({
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin: 0 5px; /* Space between buttons */
+  margin: 0 5px;
 }
 
 .quantity-button:hover {
@@ -284,8 +281,8 @@ export default defineComponent({
 }
 
 .quantity-input {
-  width: 50px; /* Fixed width for input */
-  text-align: center; /* Center the text in the input */
+  width: 50px;
+  text-align: center;
 }
 
 .remove-button {
@@ -294,6 +291,7 @@ export default defineComponent({
   border: none;
   border-radius: 10px;
   cursor: pointer;
+  margin-left: 20px;
 }
 
 .remove-button:hover {

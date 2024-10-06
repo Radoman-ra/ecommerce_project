@@ -4,7 +4,7 @@
     <button v-if="!isAuthenticated" @click="goToLogin" class="btn">Login</button>
     <button v-if="!isAuthenticated" @click="goToRegister" class="btn">Register</button>
     <button v-else @click="goToProfile" class="btn">Profile</button>
-    <button @click="goToCart" class="btn">Cart</button>
+    <button v-if="isAuthenticated" @click="goToCart" class="btn">Cart</button>
   </div>
 </template>
 
@@ -43,10 +43,12 @@ export default defineComponent({
 
 <style scoped>
 .auth-buttons {
+  width: 100%;
   display: flex;
+  padding: 10px;
   gap: 10px;
-  justify-content: flex-start;
   margin-bottom: 20px;
+  justify-content: center;
 }
 
 .btn {
@@ -57,6 +59,8 @@ export default defineComponent({
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s;
+  outline: none;
+  border: none;
 }
 
 .btn:hover {

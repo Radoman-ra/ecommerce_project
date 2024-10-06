@@ -30,47 +30,85 @@
           <option :value="50">50</option>
         </select>
         <button type="submit" class="btn search-btn">Search</button>
+        <div class="pagination" style="display: flex; flex-direction: column">
+          <div style="display: flex; gap: 4px; align-items: center; justify-content: center">
+            <button @click="prevPage" :disabled="currentPage === 1" class="btn">Previous</button>
+            <label style="min-width: 80px; text-align: center"
+              >{{ currentPage }} / {{ totalPages }}</label
+            >
+            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn">
+              Next
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 4px; align-items: center; justify-content: space-between">
+            <button @click="goToPage(1)" :disabled="currentPage === 1" class="btn">First</button>
+            <button
+              @click="goToPage(totalPages)"
+              :disabled="currentPage === totalPages"
+              class="btn"
+            >
+              Last
+            </button>
+          </div>
+        </div>
 
         <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
       </form>
     </div>
 
     <div class="products">
-      <div v-if="products.length && !errorMessage">
-        <div class="product-grid">
-          <div v-for="product in products" :key="product.id" class="product-card">
+      <div v-if="products.length && !errorMessage" class="product-grid">
+        <div
+          v-for="product in products"
+          :key="product.id"
+          @click="openModal(product)"
+          class="product-card"
+        >
+          <div class="image-container">
             <img
               :src="`http://127.0.0.1:8000/image/${product.name}.png`"
               alt="Product Image"
               class="product-image"
             />
-            <h3 class="product-name">{{ product.name }}</h3>
-            <p class="product-price">${{ product.price }}</p>
-            <p class="product-quantity">Available: {{ product.availableQuantity }}</p>
-            <button @click="addToCart(product)" class="btn add-cart-btn">Add to Cart</button>
-            <p v-if="getCartQuantity(product.id) > 0" class="cart-quantity">
-              In Cart: {{ getCartQuantity(product.id) }}
-            </p>
-            <button @click="openModal(product)" class="btn details-btn">View Details</button>
+            <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
           </div>
-        </div>
-
-        <div class="pagination">
-          <button @click="prevPage" :disabled="currentPage === 1" class="btn">Previous</button>
-          <button @click="nextPage" :disabled="currentPage === totalPages" class="btn">Next</button>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-price">${{ product.price }}</p>
+          <div style="display: flex; gap: 8px; justify-content: center"></div>
         </div>
       </div>
     </div>
 
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <span @click="closeModal" class="close">&times;</span>
-        <h2>{{ selectedProduct.name }}</h2>
-        <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
-        <p><strong>Description:</strong> {{ selectedProduct.description }}</p>
-        <p><strong>Price:</strong> ${{ selectedProduct.price }}</p>
-        <p><strong>Available Quantity:</strong> {{ selectedProduct.availableQuantity }}</p>
-        <button @click="addToCart(selectedProduct)" class="btn add-cart-btn">Add to Cart</button>
+    <div
+      v-if="showModal"
+      class="modal"
+      @click="closeModal"
+      aria-modal="true"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div class="modal-content" @click.stop>
+        <span @click="closeModal" class="close" role="button" aria-label="Close modal"
+          >&times;</span
+        >
+        <h2 class="modal-title">{{ selectedProduct.name }}</h2>
+        <div class="modal-main">
+          <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
+          <div class="modal-description">
+            <label class="modal-description-label">Description:</label>
+            <p>{{ selectedProduct.description }}</p>
+          </div>
+        </div>
+        <div class="cart-section">
+          <div class="modal-info">
+            <p class="modal-price"><strong>Price:</strong> ${{ selectedProduct.price }}</p>
+            <p>
+              <strong class="modal-qty">In Stock:</strong> {{ selectedProduct.availableQuantity }}
+            </p>
+          </div>
+          <button @click="addToCart(selectedProduct)" class="btn add-cart-btn">Add to Cart</button>
+        </div>
       </div>
     </div>
   </div>
@@ -169,6 +207,12 @@ export default defineComponent({
         await this.searchProducts()
       }
     },
+    async goToPage(page: number) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page
+        await this.searchProducts()
+      }
+    },
     addToCart(product: { id: number; name: string; price: number; availableQuantity: number }) {
       const existingItem = this.cart.find((item: { id: number }) => item.id === product.id)
       if (existingItem) {
@@ -210,6 +254,9 @@ export default defineComponent({
         imageUrl: string
       }
     }
+  },
+  mounted() {
+    this.searchProducts()
   }
 })
 </script>
@@ -221,24 +268,114 @@ body {
   color: #333;
 }
 
-.marketplace-container {
+.modal-info {
+  font-weight: 600;
+  margin-top: 7px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.cart-section {
+  display: flex;
+}
+
+.modal-description-label {
+  font-weight: 550;
+}
+
+.modal-description {
+  margin-left: 20px;
+}
+
+.modal-price {
+  margin-bottom: 10px;
+}
+
+.modal-main {
+  display: flex;
+  margin-bottom: 20px;
+}
+.modal-qty {
+  margin-bottom: 10px;
+}
+
+.modal-content {
+  background-color: #fff;
   padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.modal-product-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+}
+
+.close:hover {
+  color: #f00;
+}
+
+.btn.add-cart-btn {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 20px;
+}
+
+.btn.add-cart-btn:hover {
+  background-color: #218838;
+}
+
+.marketplace-container {
+  display: flex;
   position: relative;
 }
 
 .filters {
-  width: 25%;
-  position: fixed;
-  top: 0;
-  left: 0;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   background-color: #ffffff;
   border-right: 2px solid #ddd;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .search-form {
@@ -249,155 +386,171 @@ body {
 .input-field {
   padding: 10px;
   margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  transition: border-color 0.3s;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-.input-field:focus {
-  border-color: #007bff;
+.btn {
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .search-btn {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  background-color: #1e90ff;
 }
 
-.search-btn:hover {
-  background-color: #0056b3;
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
 }
 
-.limit-label {
-  margin: 10px 0 5px;
+.error-message {
+  color: red;
+  font-weight: bold;
 }
 
 .products {
-  margin-left: 25%;
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   width: 100%;
 }
 
 .product-card {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  text-align: center;
   background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
-
-.product-card:hover {
-  transform: scale(1.03);
 }
 
 .product-image {
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  border-radius: 5px;
+  border-radius: 8px;
+}
+
+.cart-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgb(239, 246, 255);
+  color: rgba(37, 136, 223, 0.84);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 10;
 }
 
 .product-name {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 10px 0;
+  margin-top: 10px;
+  text-align: left;
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
 .product-price {
-  font-size: 1rem;
-  color: #28a745;
+  text-align: left;
+  color: #000000;
+  font-size: 1.1em;
+  margin-bottom: 10px;
 }
 
 .product-quantity {
-  font-size: 0.9rem;
-  color: #555;
+  margin-bottom: 15px;
 }
 
 .cart-quantity {
-  font-size: 0.8rem;
-  color: #007bff;
-}
-
-.add-cart-btn,
-.details-btn {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.add-cart-btn:hover,
-.details-btn:hover {
-  background-color: #218838;
+  margin-top: 10px;
+  font-weight: bold;
+  color: green;
 }
 
 .modal {
   position: fixed;
-  top: 0;
+  z-index: 1000;
   left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.image-container {
+  position: relative;
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: #fefefe;
+  margin: 10% auto;
   padding: 20px;
-  border-radius: 8px;
-  width: 400px;
+  border: 1px solid #888;
+  width: 40%;
   position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 20px;
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
   cursor: pointer;
-  color: #333;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .modal-product-image {
   max-width: 100%;
   height: auto;
-  border-radius: 5px;
+  margin-bottom: 20px;
 }
 
-.error-message {
-  color: red;
-  margin-top: 10px;
-  font-size: 0.9rem;
+@media (max-width: 768px) {
+  .products {
+    width: 100%;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
+@media (max-width: 480px) {
+  .products {
+    width: 100%;
+    padding-left: 0;
+    margin-left: 0;
+  }
 
-.pagination .btn {
-  margin: 0 10px;
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    width: 100%;
+    position: relative;
+    height: auto;
+    border-right: none;
+  }
 }
 </style>
