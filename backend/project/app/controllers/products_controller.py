@@ -1,8 +1,10 @@
+import os
+import shutil
 from app.core.security import get_user_by_token
 from app.utils.utils import check_admin_privileges
 from app.schemas.schemas import ProductCreate, ProductResponse, ProductUpdate
 from app.database.tables import Product
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 
@@ -10,9 +12,19 @@ def create_product(
     product_data: ProductCreate,
     db: Session,
     authorization: str,
+    photo: UploadFile = None,
 ) -> ProductResponse:
     user = get_user_by_token(authorization, db)
     check_admin_privileges(user)
+
+    if photo:
+        photo_path = f"static/images/{product_data.name}.png"
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        with open(photo_path, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+    else:
+        photo_path = None
+
     product = Product(
         name=product_data.name,
         description=product_data.description,
@@ -20,18 +32,13 @@ def create_product(
         category_id=product_data.category_id,
         supplier_id=product_data.supplier_id,
         quantity=product_data.quantity,
+        photo_path=photo_path,
     )
     db.add(product)
     db.commit()
     db.refresh(product)
     return ProductResponse.from_orm(product)
 
-
-def get_all_products(
-    db: Session, limit: int, offset: int
-) -> list[ProductResponse]:
-    products = db.query(Product).offset(offset).limit(limit).all()
-    return [ProductResponse.from_orm(product) for product in products]
 
 
 def update_product(

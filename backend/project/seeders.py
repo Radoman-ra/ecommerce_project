@@ -1,4 +1,6 @@
 import asyncio
+import os
+import shutil
 import time
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -31,7 +33,6 @@ def create_main_user():
     user = UserCreate(username="root", email="root@root.root", password="root")
     db = SessionLocal()
     
-    # Check if user already exists
     existing_user = db.query(User).filter(User.username == user.username).first()
     
     if existing_user is None:
@@ -43,7 +44,14 @@ def create_main_user():
     db.close()
 
 
-async def clear_db(db: Session):
+async def clear_db_img(db: Session):
+    images_folder = "static/images"
+    if os.path.exists(images_folder):
+        shutil.rmtree(images_folder)
+        print(f"Folder {images_folder} deleted.")
+    else:
+        print(f"Folder {images_folder} does not exist.")
+    
     db.execute(text("DELETE FROM order_product"))
     db.query(Order).delete()
     db.query(Product).delete()
@@ -52,12 +60,11 @@ async def clear_db(db: Session):
     db.commit()
     print("Database cleared")
 
-
 async def seed():
     start_time = time.time()
     db = SessionLocal()
     try:
-        await clear_db(db)
+        await clear_db_img(db)
         await seed_suppliers(db, 50)
         await seed_categories(db, 10)
         await seed_products(db, 1000)

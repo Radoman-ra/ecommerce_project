@@ -68,7 +68,7 @@ class Product(Base):
         Integer, ForeignKey("suppliers.id"), nullable=False, index=True
     )
     quantity = Column(Integer, default=0, index=True)
-
+    photo_path = Column(String(200), nullable=True, unique=True)
     category = relationship("Category", back_populates="products")
     supplier = relationship("Supplier", back_populates="products")
     orders = relationship(

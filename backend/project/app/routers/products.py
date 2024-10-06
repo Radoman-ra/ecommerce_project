@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from app.controllers.products_controller import (
     create_product,
-    get_all_products,
     update_product,
     delete_product,
 )
@@ -22,15 +21,6 @@ async def create_new_product(
     authorization: str = Header(None),
 ):
     return create_product(product_data, db, authorization)
-
-
-@router.get("/", response_model=List[ProductResponse])
-async def fetch_all_products(
-    db: Session = Depends(get_db),
-    limit: Optional[int] = Query(10, ge=1, le=100),
-    offset: Optional[int] = Query(0, ge=0),
-):
-    return get_all_products(db, limit, offset)
 
 
 @router.put("/{product_id}", response_model=ProductResponse)

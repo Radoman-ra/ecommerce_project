@@ -12,17 +12,31 @@
       <div v-if="cartItems.length === 0">Your cart is empty.</div>
       <ul v-else class="cart-list">
         <li v-for="item in cartItems" :key="item.id" class="cart-item">
-          {{ item.name }} - {{ item.price }}$ x
-          <input
-            type="number"
-            v-model.number="item.quantity"
-            min="1"
-            :max="item.availableQuantity"
-            @input="updateQuantity(item)"
+          <img
+            :src="`http://127.0.0.1:8000/image/${item.name}.png`"
+            alt="Product Image"
+            class="cart-image"
           />
-          = {{ (item.price * item.quantity).toFixed(2) }}$
-          <span v-if="item.availableQuantity < 999">(Available: {{ item.availableQuantity }})</span>
-          <button class="remove-button" @click="removeFromCart(item.id)">Remove</button>
+          <div class="cart-details">
+            <div>{{ item.name }} - {{ item.price }}$</div>
+            <div class="quantity-controls">
+              <button class="quantity-button" @click="decreaseQuantity(item)">-</button>
+              <input
+                type="number"
+                v-model.number="item.quantity"
+                min="1"
+                :max="item.availableQuantity"
+                class="quantity-input"
+                @input="handleInput(item)"
+              />
+              <button class="quantity-button" @click="increaseQuantity(item)">+</button>
+              = {{ (item.price * item.quantity).toFixed(2) }}$
+              <span v-if="item.availableQuantity < 999"
+                >(Available: {{ item.availableQuantity }})</span
+              >
+            </div>
+            <button class="remove-button" @click="removeFromCart(item.id)">Remove</button>
+          </div>
         </li>
       </ul>
     </div>
@@ -38,6 +52,7 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const cartItems = ref(JSON.parse(localStorage.getItem('cart') || '[]'))
+    const timeoutIds = ref<number[]>([])
 
     const totalPrice = computed(() => {
       return cartItems.value.reduce(
@@ -53,18 +68,46 @@ export default defineComponent({
       cartItems.value = updatedCart
     }
 
-    const updateQuantity = (item: { id: number; quantity: number; availableQuantity: number }) => {
-      if (item.quantity < 1) {
-        removeFromCart(item.id)
-      } else if (item.quantity > item.availableQuantity) {
-        item.quantity = item.availableQuantity // Set to max available quantity
-      } else {
-        const updatedCart = cartItems.value.map((cartItem: { id: number; quantity: number }) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: item.quantity } : cartItem
-        )
-        localStorage.setItem('cart', JSON.stringify(updatedCart))
-        cartItems.value = updatedCart
+    const increaseQuantity = (item: {
+      id: number
+      quantity: number
+      availableQuantity: number
+    }) => {
+      if (item.quantity < item.availableQuantity) {
+        item.quantity++
+        updateLocalStorage()
       }
+    }
+
+    const decreaseQuantity = (item: { id: number; quantity: number }) => {
+      if (item.quantity > 1) {
+        item.quantity--
+        updateLocalStorage()
+      } else {
+        removeFromCart(item.id)
+      }
+    }
+
+    const updateLocalStorage = () => {
+      localStorage.setItem('cart', JSON.stringify(cartItems.value))
+    }
+
+    const handleInput = (item: { id: number; quantity: number; availableQuantity: number }) => {
+      // Clear any existing timeout
+      timeoutIds.value.forEach((id) => clearTimeout(id))
+      timeoutIds.value = []
+
+      // Set a new timeout to apply the value
+      const timeoutId = setTimeout(() => {
+        if (item.quantity < 1) {
+          item.quantity = 1 // Set to minimum quantity of 1
+        } else if (item.quantity > item.availableQuantity) {
+          item.quantity = item.availableQuantity // Limit to max available quantity
+        }
+        updateLocalStorage()
+      }, 500) // Delay of 500ms
+
+      timeoutIds.value.push(timeoutId) // Store timeout ID
     }
 
     const checkout = async () => {
@@ -155,7 +198,9 @@ export default defineComponent({
       cartItems,
       totalPrice,
       removeFromCart,
-      updateQuantity,
+      increaseQuantity,
+      decreaseQuantity,
+      handleInput,
       checkout,
       goHome
     }
@@ -200,11 +245,47 @@ export default defineComponent({
 }
 
 .cart-item {
+  display: flex; /* Use flex for layout */
+  align-items: center; /* Align items vertically */
   background-color: #ffffff;
   padding: 15px;
   margin: 10px 0;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cart-image {
+  width: 80px; /* Increased width for the product image */
+  height: 80px; /* Increased height for the product image */
+  border-radius: 5px; /* Optional: rounded corners */
+  margin-right: 15px; /* Space between image and text */
+}
+
+.cart-details {
+  flex-grow: 1; /* Allow details to take up remaining space */
+}
+
+.quantity-controls {
+  display: flex; /* Use flex for layout */
+  align-items: center; /* Align items vertically */
+}
+
+.quantity-button {
+  padding: 6px 12px;
+  background-color: #dfe7ec;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 5px; /* Space between buttons */
+}
+
+.quantity-button:hover {
+  background-color: #cfd7e3;
+}
+
+.quantity-input {
+  width: 50px; /* Fixed width for input */
+  text-align: center; /* Center the text in the input */
 }
 
 .remove-button {

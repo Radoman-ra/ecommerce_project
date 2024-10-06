@@ -1,6 +1,7 @@
 import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.routers import auth, categories, products, suppliers, orders, search
 
@@ -37,6 +38,8 @@ app.include_router(categories.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(search.router)
+app.mount("/image", StaticFiles(directory="static/images"), name="images")
+
 
 
 def custom_openapi():
