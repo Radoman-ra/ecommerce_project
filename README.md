@@ -2,7 +2,7 @@
 
 - [x] on start make search (on mounted)
 - [ ] fix ui products (cards)
-- [ ] "in cart" tag in right top corner
+- [x] "in cart" tag in right top corner
 - [ ] Pagination Right Bottom
 - [ ] fix input in cart
 
