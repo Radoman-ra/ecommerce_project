@@ -51,7 +51,7 @@ async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
 
         product = Product(
             name=product_name,
-            description=fake.text(max_nb_chars=500),
+            description=fake.text(max_nb_chars=200),
             price=fake.random_number(digits=3),
             category_id=fake.random_element(elements=category_ids),
             supplier_id=fake.random_element(elements=supplier_ids),

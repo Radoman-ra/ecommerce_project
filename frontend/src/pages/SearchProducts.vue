@@ -1,113 +1,129 @@
 <template>
-  <div class="marketplace-container">
-    <div class="filters">
-      <HomeButtons />
-      <form @submit.prevent="searchProducts" class="search-form">
-        <h2>Search Filters</h2>
-        <input v-model="productName" placeholder="Product Name" class="input-field" />
-        <input
-          v-model="creationDateFrom"
-          placeholder="Creation Date From"
-          type="date"
-          class="input-field"
-        />
-        <input
-          v-model="creationDateTo"
-          placeholder="Creation Date To"
-          type="date"
-          class="input-field"
-        />
-        <input v-model="categoryName" placeholder="Category Name" class="input-field" />
-        <input v-model="supplierName" placeholder="Supplier Name" class="input-field" />
-        <input v-model="minPrice" placeholder="Min Price" type="number" class="input-field" />
-        <input v-model="maxPrice" placeholder="Max Price" type="number" class="input-field" />
-        <label for="limit" class="limit-label">Items per page:</label>
-        <select v-model.number="limit" id="limit" class="input-field">
-          <option :value="5">5</option>
-          <option :value="10">10</option>
-          <option :value="20">20</option>
-          <option :value="30">30</option>
-          <option :value="50">50</option>
-        </select>
-        <button type="submit" class="btn search-btn">Search</button>
-        <div class="pagination" style="display: flex; flex-direction: column">
-          <div style="display: flex; gap: 4px; align-items: center; justify-content: center">
-            <button @click="prevPage" :disabled="currentPage === 1" class="btn">Previous</button>
-            <label style="min-width: 80px; text-align: center"
-              >{{ currentPage }} / {{ totalPages }}</label
-            >
-            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn">
-              Next
+  <div>
+    <div class="header">
+      <div class="auth-buttons">
+        <HomeButtons />
+      </div>
+    </div>
+    <div class="marketplace-container">
+      <div class="filters">
+        <form @submit.prevent="searchProducts" class="search-form">
+          <h2>Search Filters</h2>
+          <input v-model="productName" placeholder="Product Name" class="input-field" />
+          <input
+            v-model="creationDateFrom"
+            placeholder="Creation Date From"
+            type="date"
+            class="input-field"
+          />
+          <input
+            v-model="creationDateTo"
+            placeholder="Creation Date To"
+            type="date"
+            class="input-field"
+          />
+          <input v-model="categoryName" placeholder="Category Name" class="input-field" />
+          <input v-model="supplierName" placeholder="Supplier Name" class="input-field" />
+          <input v-model="minPrice" placeholder="Min Price" type="number" class="input-field" />
+          <input v-model="maxPrice" placeholder="Max Price" type="number" class="input-field" />
+          <label for="limit" class="limit-label">Items per page:</label>
+          <select v-model.number="limit" id="limit" class="input-field">
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="30">30</option>
+            <option :value="50">50</option>
+          </select>
+          <button type="submit" class="btn search-btn">Search</button>
+
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+        </form>
+      </div>
+
+      <div class="products">
+        <div v-if="products.length && !errorMessage" class="product-grid">
+          <div
+            v-for="product in products"
+            :key="product.id"
+            @click="openModal(product)"
+            class="product-card"
+          >
+            <div class="image-container">
+              <img
+                :src="`http://127.0.0.1:8000/image/${product.name}.png`"
+                alt="Product Image"
+                class="product-image"
+              />
+              <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
+            </div>
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-price">${{ product.price }}</p>
+            <div style="display: flex; gap: 8px; justify-content: center"></div>
+          </div>
+        </div>
+        <div class="pagination">
+          <div class="nav-btn-prev">
+            <button @click="goToPage(1)" :disabled="currentPage === 1" class="pagination-btn first">
+              First
+            </button>
+            <button @click="prevPage" :disabled="currentPage === 1" class="pagination-btn prev">
+              &#8592;
             </button>
           </div>
-
-          <div style="display: flex; gap: 4px; align-items: center; justify-content: space-between">
-            <button @click="goToPage(1)" :disabled="currentPage === 1" class="btn">First</button>
+          <div class="nav-page">
+            <label class="pagination-label">{{ currentPage }} / {{ totalPages }}</label>
+          </div>
+          <div class="nav-btn-next">
+            <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              class="pagination-btn next"
+            >
+              &rarr;
+            </button>
             <button
               @click="goToPage(totalPages)"
               :disabled="currentPage === totalPages"
-              class="btn"
+              class="pagination-btn last"
             >
               Last
             </button>
           </div>
         </div>
-
-        <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-      </form>
-    </div>
-
-    <div class="products">
-      <div v-if="products.length && !errorMessage" class="product-grid">
-        <div
-          v-for="product in products"
-          :key="product.id"
-          @click="openModal(product)"
-          class="product-card"
-        >
-          <div class="image-container">
-            <img
-              :src="`http://127.0.0.1:8000/image/${product.name}.png`"
-              alt="Product Image"
-              class="product-image"
-            />
-            <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
-          </div>
-          <h3 class="product-name">{{ product.name }}</h3>
-          <p class="product-price">${{ product.price }}</p>
-          <div style="display: flex; gap: 8px; justify-content: center"></div>
-        </div>
       </div>
-    </div>
 
-    <div
-      v-if="showModal"
-      class="modal"
-      @click="closeModal"
-      aria-modal="true"
-      role="dialog"
-      tabindex="-1"
-    >
-      <div class="modal-content" @click.stop>
-        <span @click="closeModal" class="close" role="button" aria-label="Close modal"
-          >&times;</span
-        >
-        <h2 class="modal-title">{{ selectedProduct.name }}</h2>
-        <div class="modal-main">
-          <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
-          <div class="modal-description">
-            <label class="modal-description-label">Description:</label>
-            <p>{{ selectedProduct.description }}</p>
+      <div
+        v-if="showModal"
+        class="modal"
+        @click="closeModal"
+        aria-modal="true"
+        role="dialog"
+        tabindex="-1"
+      >
+        <div class="modal-content" @click.stop>
+          <span @click="closeModal" class="close" role="button" aria-label="Close modal"
+            >&times;</span
+          >
+          <h2 class="modal-title">{{ selectedProduct.name }}</h2>
+          <div class="modal-main">
+            <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
+            <div class="modal-description">
+              <label class="modal-description-label">Description:</label>
+              <p>{{ selectedProduct.description }}</p>
+            </div>
           </div>
-        </div>
-        <div class="cart-section">
-          <div class="modal-info">
-            <p class="modal-price"><strong>Price:</strong> ${{ selectedProduct.price }}</p>
-            <p>
-              <strong class="modal-qty">In Stock:</strong> {{ selectedProduct.availableQuantity }}
-            </p>
+          <div class="cart-section">
+            <div class="modal-info">
+              <p class="modal-price"><strong>Price:</strong> ${{ selectedProduct.price }}</p>
+              <p>
+                <strong class="modal-qty">In Stock:</strong>
+                {{ selectedProduct.availableQuantity }}
+              </p>
+            </div>
+            <button @click="addToCart(selectedProduct)" class="btn add-cart-btn">
+              Add to Cart
+            </button>
           </div>
-          <button @click="addToCart(selectedProduct)" class="btn add-cart-btn">Add to Cart</button>
         </div>
       </div>
     </div>
@@ -273,6 +289,15 @@ body {
   margin-top: 7px;
 }
 
+.auth-buttons {
+  margin: auto;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 80rem;
+}
+.header {
+  margin-top: 6rem;
+}
 .modal {
   position: fixed;
   top: 0;
@@ -361,21 +386,25 @@ body {
 }
 
 .marketplace-container {
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  margin: auto;
+  max-width: 80rem;
+  height: 100%;
   display: flex;
   position: relative;
 }
 
 .filters {
-  height: 100vh;
-  display: flex;
+  margin-top: 0.5%;
+  height: auto;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  background-color: #ffffff;
   border-right: 2px solid #ddd;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   overflow-x: hidden;
+  width: 30%;
 }
 
 .search-form {
@@ -405,14 +434,71 @@ body {
 }
 
 .pagination {
-  margin-top: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 10px;
+  max-width: 100%;
+}
+
+.pagination-btn {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  margin: 0 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-btn:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination-label {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  min-width: 80px;
+  text-align: center;
+}
+
+.nav-btn-prev,
+.nav-btn-next {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 500px) {
+  .pagination {
+    flex-direction: column;
+  }
+  .pagination-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+  .pagination-label {
+    margin: 10px 0;
+  }
 }
 
 .error-message {
   color: red;
   font-weight: bold;
+}
+
+.nav-btn-prev,
+.nav-btn-next {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
 }
 
 .products {
@@ -422,8 +508,8 @@ body {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
   width: 100%;
 }
 
@@ -431,15 +517,23 @@ body {
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   text-align: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .product-image {
   width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+.image-container {
+  position: relative;
+  display: flex;
 }
 
 .cart-tag {
@@ -455,13 +549,15 @@ body {
 }
 
 .product-name {
-  margin-top: 10px;
+  margin-top: 20px;
   text-align: left;
   font-size: 1.2em;
   margin-bottom: 10px;
 }
 
 .product-price {
+  font-weight: bold;
+  margin-top: 15px;
   text-align: left;
   color: #000000;
   font-size: 1.1em;
@@ -487,10 +583,6 @@ body {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.4);
-}
-
-.image-container {
-  position: relative;
 }
 
 .modal-content {

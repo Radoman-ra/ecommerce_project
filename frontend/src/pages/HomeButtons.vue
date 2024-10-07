@@ -1,5 +1,6 @@
 <template>
   <div class="auth-buttons">
+    <img src="../icon/logo.svg" @click="home" alt="Logo" class="logo" />
     <button v-if="isAuthenticated" @click="logout" class="btn">Logout</button>
     <button v-if="!isAuthenticated" @click="goToLogin" class="btn">Login</button>
     <button v-if="!isAuthenticated" @click="goToRegister" class="btn">Register</button>
@@ -18,6 +19,7 @@ export default defineComponent({
     const router = useRouter()
     const isAuthenticated = !!Cookies.get('access_token')
 
+    const home = () => router.push('/')
     const goToLogin = () => router.push('/login')
     const goToRegister = () => router.push('/register')
     const goToProfile = () => router.push('/profile')
@@ -31,6 +33,7 @@ export default defineComponent({
 
     return {
       isAuthenticated,
+      home,
       goToLogin,
       goToRegister,
       goToProfile,
@@ -65,5 +68,11 @@ export default defineComponent({
 
 .btn:hover {
   background-color: #0056b3;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  margin-right: auto;
 }
 </style>

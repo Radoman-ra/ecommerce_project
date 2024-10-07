@@ -1,12 +1,12 @@
 <template>
-  <div class="no-home-page">
+  <div>
     <SearchProducts />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import SearchProducts from '../components/SearchProducts.vue'
+import SearchProducts from './SearchProducts.vue'
 
 export default defineComponent({
   components: {
@@ -15,13 +15,4 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-.home-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f8f9fa;
-}
-</style>
+<style scoped></style>
