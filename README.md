@@ -1,17 +1,17 @@
 # To DO
 
 - [x] on start make search (on mounted)
-- [ ] fix ui products (cards)
+- [x] fix ui products (cards)
 - [x] "in cart" tag in right top corner
-- [ ] Pagination Right Bottom
-- [ ] fix input in cart
+- [x] Pagination Right Bottom
+- [x] fix input in cart
 
-- [ ] fix ui cart (from site, send to Vlad)
+- [x] fix ui cart (from site, send to Vlad)
 - [ ] fix ui order dsetails (from site, send to Vlad)
 - [ ] fix ui login
 - [ ] fix ui register
 - [ ] fix ui profile (from site, send to Vlad)
-- [ ] less color buttons
+- [x] less color buttons
 
 ## Last
 
