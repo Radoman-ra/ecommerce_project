@@ -77,3 +77,14 @@ def delete_supplier(
 
     db.delete(supplier)
     db.commit()
+
+def get_supplier_by_id(
+    supplier_id: int, db: Session
+) -> SupplierResponse:
+    supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
+    if not supplier:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Supplier not found",
+        )
+    return SupplierResponse.from_orm(supplier)

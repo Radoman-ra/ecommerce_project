@@ -1,7 +1,7 @@
 <template>
   <div class="register-page">
-    <h2>Register</h2>
     <form @submit.prevent="register" class="register-form">
+      <h2 class="register-text">Register</h2>
       <input v-model="username" placeholder="Username" required class="input-field" />
       <input v-model="email" placeholder="Email" type="email" required class="input-field" />
       <input
@@ -11,8 +11,10 @@
         required
         class="input-field"
       />
-      <button type="submit" class="btn">Register</button>
+      <button type="submit" class="btn btn-primary">Register</button>
+      <button @click="goToLogin" class="btn btn-secondary">Go to Login</button>
     </form>
+    <p v-if="message">{{ message }}</p>
   </div>
 </template>
 
@@ -59,6 +61,9 @@ export default defineComponent({
           this.message = 'An error occurred. Please check your network connection.'
         }
       }
+    },
+    goToLogin() {
+      this.router.push('/login')
     }
   }
 })
@@ -93,14 +98,32 @@ export default defineComponent({
 
 .btn {
   padding: 10px 20px;
-  background-color: #f0f0f0;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.btn:hover {
-  background-color: #d8e2dc;
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.register-text {
+  font-size: 24px;
+  font-weight: 500;
 }
 </style>

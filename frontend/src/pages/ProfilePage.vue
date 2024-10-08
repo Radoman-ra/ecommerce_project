@@ -1,28 +1,24 @@
 <template>
   <div class="profile-wrapper">
+    <div class="header">
+      <div class="auth-buttons">
+        <HomeButtons />
+      </div>
+    </div>
     <div class="profile-container">
-      <button class="home-button" @click="goHome">Home</button>
       <h1>My Orders</h1>
       <form class="filter-form" @submit.prevent="fetchOrders">
-        <label for="status">Order Status:</label>
-        <select v-model="selectedStatus" class="rounded-input">
-          <option value="">All</option>
-          <option value="Pending">Pending</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
-        <button class="filter-button" type="submit">Filter</button>
-        <button class="pagination-prev-button" @click="prevPage" :disabled="currentPage === 1">
-          Previous
-        </button>
-        <p>Page {{ currentPage }} of {{ totalPages }}</p>
-        <button
-          class="pagination-next-button"
-          @click="nextPage"
-          :disabled="currentPage === totalPages"
-        >
-          Next
-        </button>
+        <div class="order-filter">
+          <label for="status">Order Status:</label>
+          <select v-model="selectedStatus" class="rounded-input">
+            <option value="">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <button class="filter-button" type="submit">Filter</button>
+        </div>
       </form>
 
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
@@ -30,17 +26,55 @@
       <div v-if="orders.length && !errorMessage" class="orders-list">
         <ul>
           <li v-for="order in orders" :key="order.id" class="order-card">
-            <h2>Order ID: {{ order.id }}</h2>
-            <p>Status: {{ order.status }}</p>
-            <p>Order Date: {{ new Date(order.order_date).toLocaleString() }}</p>
+            <div class="order-header">
+              <h2 class="order-id">Order ID: {{ order.id }}</h2>
+              <p>Order Date: {{ new Date(order.order_date).toLocaleString() }}</p>
+              <p class="order-status">Status: {{ order.status }}</p>
+            </div>
+
+            <div class="progress-bar">
+              <div class="progress-fill" :style="getProgressBarStyle(order.status)"></div>
+              <span v-if="order.status === 'Cancelled'" class="cancelled-text">Cancelled</span>
+            </div>
+
             <ul class="product-list">
-              <li v-for="product in order.products" :key="product.product_id">
-                Product ID: {{ product.product_id }}, Quantity: {{ product.quantity }}
+              <li v-for="product in order.products" :key="product.product_id" class="product-card">
+                <div v-if="product.details" class="product-info">
+                  <img :src="product.details.imageUrl" alt="Product Image" class="product-image" />
+                  <div class="product-details">
+                    <div class="product-name">{{ product.details.name }}</div>
+                    <div class="product-price">Price: ${{ product.details.price }}</div>
+                    <div class="product-category">
+                      Category: {{ product.details.category.name }}
+                    </div>
+                    <div class="product-supplier-info">
+                      <div class="supplier-name">Supplier: {{ product.details.supplier.name }}</div>
+                      <div class="supplier-email">{{ product.details.supplier.contact_email }}</div>
+                    </div>
+                    <p>Phone: {{ product.details.supplier.phone_number }}</p>
+                    <p>Quantity: {{ product.quantity }}</p>
+                  </div>
+                </div>
+                <div v-else>
+                  <p>Loading product details...</p>
+                </div>
               </li>
             </ul>
           </li>
         </ul>
-        <div class="pagination"></div>
+      </div>
+      <div class="pagination">
+        <button class="pagination-prev-button" @click="prevPage" :disabled="currentPage === 1">
+          &#8592;
+        </button>
+        <p>Page {{ currentPage }} of {{ totalPages }}</p>
+        <button
+          class="pagination-next-button"
+          @click="nextPage"
+          :disabled="currentPage === totalPages"
+        >
+          &rarr;
+        </button>
       </div>
     </div>
   </div>
@@ -50,15 +84,19 @@
 import { defineComponent } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import HomeButtons from './HomeButtons.vue'
 
 export default defineComponent({
+  components: {
+    HomeButtons
+  },
   data() {
     return {
       orders: [] as Array<{
         id: number
         status: string
         order_date: string
-        products: Array<{ product_id: number; quantity: number }>
+        products: Array<{ product_id: number; quantity: number; details?: any }>
       }>,
       currentPage: 1,
       totalPages: 0,
@@ -115,10 +153,45 @@ export default defineComponent({
             Authorization: `${token}`
           }
         })
-        this.orders = response.data.orders
+        const orders = response.data.orders
+        this.orders = orders
         this.totalPages = response.data.total_pages
+
+        // Запрос для получения информации о продуктах
+        for (const order of this.orders) {
+          for (const product of order.products) {
+            this.fetchProductDetails(product)
+          }
+        }
       } catch (error: any) {
         this.errorMessage = 'Failed to fetch orders'
+      }
+    },
+    async fetchProductDetails(product: any) {
+      try {
+        const productResponse = await axios.get(
+          `http://127.0.0.1:8000/api/products/${product.product_id}`
+        )
+        const productDetails = productResponse.data
+
+        const categoryResponse = await axios.get(
+          `http://127.0.0.1:8000/api/categories/${productDetails.category_id}`
+        )
+        const categoryDetails = categoryResponse.data
+
+        const supplierResponse = await axios.get(
+          `http://127.0.0.1:8000/api/suppliers/${productDetails.supplier_id}`
+        )
+        const supplierDetails = supplierResponse.data
+
+        product.details = {
+          ...productDetails,
+          imageUrl: `http://127.0.0.1:8000/image/${productDetails.name}.png`,
+          category: categoryDetails,
+          supplier: supplierDetails
+        }
+      } catch (error: any) {
+        console.error('Failed to fetch product details', error)
       }
     },
     async refreshToken() {
@@ -151,6 +224,26 @@ export default defineComponent({
         this.errorMessage = 'Failed to refresh tokens. Please log in again.'
       }
     },
+    getProgressBarStyle(status: string) {
+      let width = '0%'
+      let backgroundColor = '#00aaff'
+
+      if (status === 'pending') {
+        width = '33%'
+      } else if (status === 'shipped') {
+        width = '66%'
+      } else if (status === 'delivered') {
+        width = '100%'
+      } else if (status === 'cancelled') {
+        backgroundColor = 'red'
+        width = '100%'
+      }
+
+      return {
+        width: width,
+        backgroundColor: backgroundColor
+      }
+    },
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
@@ -174,10 +267,50 @@ export default defineComponent({
 <style scoped>
 .profile-wrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background-color: #e9ecef;
+}
+.product-image {
+  max-width: 150px;
+  border-radius: 12px;
+}
+
+.product-card {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  margin: 10px 0;
+  position: relative;
+}
+
+.product-info {
+  display: flex;
+  gap: 20px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.cancelled-text {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
 }
 
 .profile-container {
@@ -190,29 +323,27 @@ export default defineComponent({
   max-width: 800px;
   border-radius: 25px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
 }
 
 .home-button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #dfe7ec;
+  border: none;
+  cursor: pointer;
   position: absolute;
   top: 20px;
   left: 20px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  background-color: #dfe7ec;
-  color: #333;
-  cursor: pointer;
 }
 
 .home-button:hover {
-  background-color: #c4d4de;
+  background-color: #cfd7e3;
 }
 
 .filter-form {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  width: 100%;
   align-items: center;
 }
 
@@ -230,11 +361,25 @@ export default defineComponent({
 }
 
 .filter-button:hover {
-  background-color: #c4d4de;
+  background-color: #cfd7e3;
 }
 
 .orders-list {
   width: 100%;
+}
+
+.order-header {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.order-id {
+  margin-right: auto;
+}
+
+.order-status {
+  margin-left: auto;
 }
 
 .order-card {
@@ -250,25 +395,13 @@ export default defineComponent({
 }
 
 .pagination {
+  margin-left: auto;
   display: flex;
-  gap: 20px;
+  gap: 10px;
   align-items: center;
-  margin-top: 20px;
 }
 
-.pagination-next-button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: #dfe7ec;
-  border: none;
-  cursor: pointer;
-}
-
-.pagination-next-button:disabled {
-  background-color: #eaeaea;
-  cursor: not-allowed;
-}
-
+.pagination-next-button,
 .pagination-prev-button {
   padding: 8px 16px;
   border-radius: 8px;
@@ -277,6 +410,7 @@ export default defineComponent({
   cursor: pointer;
 }
 
+.pagination-next-button:disabled,
 .pagination-prev-button:disabled {
   background-color: #eaeaea;
   cursor: not-allowed;
@@ -285,5 +419,11 @@ export default defineComponent({
 .error-message {
   color: red;
   margin-top: 20px;
+}
+
+.header {
+  margin-top: 6rem;
+  max-width: 800px;
+  width: 80%;
 }
 </style>

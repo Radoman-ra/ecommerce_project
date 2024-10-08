@@ -8,8 +8,8 @@
 
 - [x] fix ui cart (from site, send to Vlad)
 - [ ] fix ui order dsetails (from site, send to Vlad)
-- [ ] fix ui login
-- [ ] fix ui register
+- [x] fix ui login
+- [x] fix ui register
 - [ ] fix ui profile (from site, send to Vlad)
 - [x] less color buttons
 

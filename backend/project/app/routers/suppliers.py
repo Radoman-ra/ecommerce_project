@@ -3,6 +3,7 @@ from typing import List, Optional
 from app.controllers.suppliers_controller import (
     create_supplier,
     get_all_suppliers,
+    get_supplier_by_id,
     update_supplier,
     delete_supplier,
 )
@@ -50,3 +51,10 @@ async def delete_existing_supplier(
     authorization: str = Header(None),
 ):
     return delete_supplier(supplier_id, db, authorization)
+
+@router.get("/{supplier_id}", response_model=SupplierResponse)
+async def fetch_supplier_by_id(
+    supplier_id: int,
+    db: Session = Depends(get_db),
+):
+    return get_supplier_by_id(supplier_id, db)

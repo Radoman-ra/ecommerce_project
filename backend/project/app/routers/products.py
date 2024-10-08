@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from app.controllers.products_controller import (
     create_product,
+    get_product_by_id,
     update_product,
     delete_product,
 )
@@ -40,3 +41,11 @@ async def delete_existing_product(
     authorization: str = Header(None),
 ):
     return delete_product(product_id, db, authorization)
+
+@router.get("/{product_id}", response_model=ProductResponse)
+async def get_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+):
+    return get_product_by_id(product_id, db)
+

@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
-    <h1>Login</h1>
     <form @submit.prevent="login" class="login-form">
+      <div class="login-text">Login</div>
       <input v-model="email" placeholder="Email" required class="input-field" />
       <input
         v-model="password"
@@ -10,7 +10,8 @@
         required
         class="input-field"
       />
-      <button type="submit" class="btn">Login</button>
+      <button type="submit" class="btn btn-login">Login</button>
+      <button type="button" class="btn btn-register" @click="goToRegister">Register</button>
       <div v-if="loginError" class="error">{{ loginError }}</div>
     </form>
   </div>
@@ -26,7 +27,7 @@ export default defineComponent({
   setup() {
     const email = ref('')
     const password = ref('')
-    const loginError = ref('') // New ref for storing login errors
+    const loginError = ref('')
     const router = useRouter()
 
     const ACCESS_TOKEN_EXPIRE_MINUTES = 15
@@ -53,21 +54,25 @@ export default defineComponent({
 
         router.push('/')
       } catch (error) {
-        // Handle the error here
         if ((error as any).response && (error as any).response.status === 401) {
-          loginError.value = 'Invalid email or password.' // Set error message for 401 status
+          loginError.value = 'Invalid email or password.'
         } else {
-          loginError.value = 'An error occurred. Please try again.' // General error message
+          loginError.value = 'An error occurred. Please try again.'
         }
         console.error('Login failed:', error)
       }
+    }
+
+    const goToRegister = () => {
+      router.push('/register') // Redirect to the register page
     }
 
     return {
       email,
       password,
       login,
-      loginError // Return the loginError ref for template binding
+      goToRegister, // Add this to handle register button click
+      loginError
     }
   }
 })
@@ -102,19 +107,37 @@ export default defineComponent({
 
 .btn {
   padding: 10px 20px;
-  background-color: #f0f0f0;
   border: none;
   border-radius: 20px;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-.btn:hover {
-  background-color: #d8e2dc;
+.btn-login {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-login:hover {
+  background-color: #0056b3;
+}
+
+.btn-register {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-register:hover {
+  background-color: #5a6268;
 }
 
 .error {
   color: red;
   margin-top: 10px;
+}
+
+.login-text {
+  font-size: 24px;
+  font-weight: 500;
 }
 </style>

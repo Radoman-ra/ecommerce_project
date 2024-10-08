@@ -434,6 +434,7 @@ body {
 }
 
 .pagination {
+  margin-top: 10px;
   display: flex;
   justify-content: flex-end;
   align-items: center;

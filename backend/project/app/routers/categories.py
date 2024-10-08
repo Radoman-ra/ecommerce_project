@@ -3,6 +3,7 @@ from typing import List
 from app.controllers.categories_controller import (
     create_category,
     get_all_categories,
+    get_category_by_id,
     update_category,
     delete_category,
 )
@@ -50,3 +51,10 @@ async def delete_existing_category(
     authorization: str = Header(None),
 ):
     return delete_category(category_id, db, authorization)
+
+@router.get("/{category_id}", response_model=CategoryResponse)
+async def fetch_category_by_id(
+    category_id: int,
+    db: Session = Depends(get_db),
+):
+    return get_category_by_id(category_id, db)

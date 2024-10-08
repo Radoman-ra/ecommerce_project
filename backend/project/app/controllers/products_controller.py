@@ -18,7 +18,7 @@ def create_product(
     check_admin_privileges(user)
 
     if photo:
-        photo_path = f"static/images/{product_data.name}.png"
+        photo_name = f"{product_data.name}.png"
         os.makedirs(os.path.dirname(photo_path), exist_ok=True)
         with open(photo_path, "wb") as buffer:
             shutil.copyfileobj(photo.file, buffer)
@@ -32,7 +32,7 @@ def create_product(
         category_id=product_data.category_id,
         supplier_id=product_data.supplier_id,
         quantity=product_data.quantity,
-        photo_path=photo_path,
+        photo_name=photo_name,
     )
     db.add(product)
     db.commit()
@@ -91,3 +91,16 @@ def delete_product(
 
     db.delete(product)
     db.commit()
+
+def get_product_by_id(
+    product_id: int,
+    db: Session,
+) -> ProductResponse:
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    return ProductResponse.from_orm(product)
