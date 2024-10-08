@@ -42,17 +42,26 @@
                 <div v-if="product.details" class="product-info">
                   <img :src="product.details.imageUrl" alt="Product Image" class="product-image" />
                   <div class="product-details">
-                    <div class="product-name">{{ product.details.name }}</div>
-                    <div class="product-price">Price: ${{ product.details.price }}</div>
-                    <div class="product-category">
-                      Category: {{ product.details.category.name }}
+                    <div>
+                      <div class="product-name">{{ product.details.name }}</div>
+                      <div class="product-category">
+                        Category: {{ product.details.category.name }}
+                      </div>
                     </div>
+                    <div class="product-price">
+                      {{ product.details.price }} x {{ product.quantity }} =
+                      {{ (product.details.price * product.quantity).toFixed(2) }}
+                    </div>
+                  </div>
+                  <div class="product-supplier">
+                    <div class="supplier-text">Supplier:</div>
                     <div class="product-supplier-info">
-                      <div class="supplier-name">Supplier: {{ product.details.supplier.name }}</div>
+                      <div class="supplier-name">{{ product.details.supplier.name }}</div>
                       <div class="supplier-email">{{ product.details.supplier.contact_email }}</div>
+                      <div class="supplier-phone">
+                        Phone: {{ product.details.supplier.phone_number }}
+                      </div>
                     </div>
-                    <p>Phone: {{ product.details.supplier.phone_number }}</p>
-                    <p>Quantity: {{ product.quantity }}</p>
                   </div>
                 </div>
                 <div v-else>
@@ -60,6 +69,8 @@
                 </div>
               </li>
             </ul>
+
+            <div class="final-price">Total Price: ${{ calculateOrderTotal(order).toFixed(2) }}</div>
           </li>
         </ul>
       </div>
@@ -157,7 +168,6 @@ export default defineComponent({
         this.orders = orders
         this.totalPages = response.data.total_pages
 
-        // Запрос для получения информации о продуктах
         for (const order of this.orders) {
           for (const product of order.products) {
             this.fetchProductDetails(product)
@@ -193,6 +203,11 @@ export default defineComponent({
       } catch (error: any) {
         console.error('Failed to fetch product details', error)
       }
+    },
+    calculateOrderTotal(order: any) {
+      return order.products.reduce((total: number, product: any) => {
+        return total + product.details.price * product.quantity
+      }, 0)
     },
     async refreshToken() {
       const refreshToken = this.getCookie('refresh_token')
@@ -274,7 +289,7 @@ export default defineComponent({
   background-color: #e9ecef;
 }
 .product-image {
-  max-width: 150px;
+  max-width: 100px;
   border-radius: 12px;
 }
 
@@ -304,6 +319,39 @@ export default defineComponent({
   border-radius: 10px;
 }
 
+.product-supplier {
+  display: flex;
+  margin-left: auto;
+  gap: 20px;
+}
+
+.supplier-text {
+  font-weight: bold;
+  color: rgba(58, 58, 58, 0.315);
+}
+
+.product-supplier-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.final-price {
+  margin-top: 10px;
+  font-weight: 550;
+  margin-right: auto;
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-price {
+  font-weight: 550;
+  margin-top: auto;
+}
 .cancelled-text {
   position: absolute;
   top: 0;
