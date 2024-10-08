@@ -15,6 +15,18 @@
 
 ## Last
 
+- [ ] conformation of password
+- [ ] fix login ui error message
+- [ ] separate project in folders
+- [ ] items per near pagination
+- [ ] cart/ after max qty show massage
+- [ ] Fix refresh auth token across all pages, not just the home page
+- [ ] un shuichopit cart while empty
+- [ ] fix pagination while empty search
+- [ ] error message if empty search
+
+---
+
 - [ ] image name in hash
 - [ ] images 1000x1000
 - [ ] random color in the mid 300x300

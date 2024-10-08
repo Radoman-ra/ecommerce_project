@@ -128,7 +128,10 @@
                   @click="addToCart(selectedProduct)"
                   class="btn add-cart-btn"
                 >
-                  Add to Cart
+                  <div>Add to Cart</div>
+                  <!-- <div v-if="getCartQuantity(selectedProduct.id) > 0" class="add_to_cart_button">
+                    {{ getCartQuantity(selectedProduct.id) }}
+                  </div> -->
                 </button>
               </div>
             </div>
@@ -356,7 +359,8 @@ body {
 }
 
 .modal-product-image {
-  max-width: 100%;
+  max-width: 250px;
+  max-height: 250px;
   height: auto;
   border-radius: 8px;
 }
@@ -405,6 +409,11 @@ body {
   height: 100%;
   display: flex;
   position: relative;
+}
+
+.add_to_cart_button {
+  display: flex;
+  flex-direction: row;
 }
 
 .filters {

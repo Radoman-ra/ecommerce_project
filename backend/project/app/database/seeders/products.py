@@ -5,24 +5,21 @@ from ..tables import Product, Category, Supplier
 from PIL import Image, ImageDraw
 import os
 import random
+import numpy as np
 
 fake = Faker()
 
-def generate_gradient_image(file_path: str, width: int = 200, height: int = 200):
-    img = Image.new("RGB", (width, height), "#FFFFFF")
-    draw = ImageDraw.Draw(img)
+def generate_gradient_image(file_path: str, width: int = 1000, height: int = 1000):
+    # Create a NumPy array of shape (height, width, 3) with random RGB values
+    random_image = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
     
-    start_color = tuple(random.randint(0, 255) for _ in range(3))
-    end_color = tuple(random.randint(0, 255) for _ in range(3))
+    # Convert the NumPy array to a PIL image
+    img = Image.fromarray(random_image)
 
-    for i in range(width):
-        ratio = i / width
-        r = int(start_color[0] * (1 - ratio) + end_color[0] * ratio)
-        g = int(start_color[1] * (1 - ratio) + end_color[1] * ratio)
-        b = int(start_color[2] * (1 - ratio) + end_color[2] * ratio)
-        draw.line([(i, 0), (i, height)], fill=(r, g, b))
+    img.save(file_path, format='PNG')
 
-    img.save(file_path)
+
+
     
 
 async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
