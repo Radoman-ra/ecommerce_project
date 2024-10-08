@@ -7,10 +7,10 @@
 - [x] fix input in cart
 
 - [x] fix ui cart (from site, send to Vlad)
-- [ ] fix ui order dsetails (from site, send to Vlad)
+- [x] fix ui order dsetails (from site, send to Vlad)
 - [x] fix ui login
 - [x] fix ui register
-- [ ] fix ui profile (from site, send to Vlad)
+- [x] fix ui profile (from site, send to Vlad)
 - [x] less color buttons
 
 ## Last

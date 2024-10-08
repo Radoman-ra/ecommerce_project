@@ -248,6 +248,7 @@ export default defineComponent({
       } else if (status === 'shipped') {
         width = '66%'
       } else if (status === 'delivered') {
+        backgroundColor = 'green'
         width = '100%'
       } else if (status === 'cancelled') {
         backgroundColor = 'red'

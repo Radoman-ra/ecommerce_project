@@ -169,6 +169,7 @@ export default defineComponent({
         alert('Order placed successfully!')
         localStorage.removeItem('cart')
         cartItems.value = []
+        router.push('/profile')
       } catch (error) {
         console.error('Error placing order:', error)
         alert('Failed to place order. Please try again.')

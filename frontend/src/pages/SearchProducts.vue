@@ -55,6 +55,9 @@
                 class="product-image"
               />
               <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
+              <span v-if="product.availableQuantity === 0" class="outofstock-tag"
+                >Out of stock</span
+              >
             </div>
             <h3 class="product-name">{{ product.name }}</h3>
             <p class="product-price">${{ product.price }}</p>
@@ -104,25 +107,31 @@
           <span @click="closeModal" class="close" role="button" aria-label="Close modal"
             >&times;</span
           >
-          <h2 class="modal-title">{{ selectedProduct.name }}</h2>
           <div class="modal-main">
             <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
-            <div class="modal-description">
-              <label class="modal-description-label">Description:</label>
-              <p>{{ selectedProduct.description }}</p>
-            </div>
-          </div>
-          <div class="cart-section">
             <div class="modal-info">
-              <p class="modal-price"><strong>Price:</strong> ${{ selectedProduct.price }}</p>
+              <h2 class="modal-title">{{ selectedProduct.name }}</h2>
+              <p class="modal-price">${{ selectedProduct.price }}</p>
               <p>
-                <strong class="modal-qty">In Stock:</strong>
-                {{ selectedProduct.availableQuantity }}
+                <strong v-if="selectedProduct.availableQuantity > 0" class="modal-qty"
+                  >In Stock: {{ selectedProduct.availableQuantity }}</strong
+                >
+                <strong v-else class="modal-outofstock">Out of Stock</strong>
               </p>
+              <div class="modal-description">
+                <label class="modal-description-label">Description:</label>
+                <p>{{ selectedProduct.description }}</p>
+              </div>
+              <div class="cart-section">
+                <button
+                  v-if="!(selectedProduct.availableQuantity == 0)"
+                  @click="addToCart(selectedProduct)"
+                  class="btn add-cart-btn"
+                >
+                  Add to Cart
+                </button>
+              </div>
             </div>
-            <button @click="addToCart(selectedProduct)" class="btn add-cart-btn">
-              Add to Cart
-            </button>
           </div>
         </div>
       </div>
@@ -284,11 +293,6 @@ body {
   color: #333;
 }
 
-.modal-info {
-  font-weight: 600;
-  margin-top: 7px;
-}
-
 .auth-buttons {
   margin: auto;
   display: flex;
@@ -319,17 +323,10 @@ body {
   font-weight: 550;
 }
 
-.modal-description {
-  margin-left: 20px;
-}
-
 .modal-price {
+  font-size: 1.5rem;
   margin-bottom: 10px;
-}
-
-.modal-main {
-  display: flex;
-  margin-bottom: 20px;
+  color: #616e70;
 }
 .modal-qty {
   margin-bottom: 10px;
@@ -340,21 +337,28 @@ body {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
+  max-width: 700px;
   width: 90%;
   position: relative;
 }
 
+.modal-main {
+  display: flex;
+}
+
 .modal-title {
+  font-weight: 600;
   font-size: 1.5rem;
-  margin-bottom: 15px;
+}
+
+.modal-outofstock {
+  color: red;
 }
 
 .modal-product-image {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
-  margin-bottom: 15px;
 }
 
 .close {
@@ -378,7 +382,15 @@ body {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
-  margin-left: 20px;
+  width: 100%;
+  margin-bottom: auto;
+}
+
+.modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 10px 0px 10px;
 }
 
 .btn.add-cart-btn:hover {
@@ -549,6 +561,18 @@ body {
   z-index: 10;
 }
 
+.outofstock-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgb(255, 239, 239);
+  color: rgba(223, 37, 37, 0.84);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 10;
+}
+
 .product-name {
   margin-top: 20px;
   text-align: left;
@@ -608,12 +632,6 @@ body {
   color: #000;
   text-decoration: none;
   cursor: pointer;
-}
-
-.modal-product-image {
-  max-width: 100%;
-  height: auto;
-  margin-bottom: 20px;
 }
 
 @media (max-width: 768px) {
