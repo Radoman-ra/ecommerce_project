@@ -13,18 +13,16 @@ fake = Faker()
 def hash_filename(name: str) -> str:
     return hashlib.sha256(name.encode()).hexdigest()
 
-def generate_gradient_image(file_path: str, width: int = 1000, height: int = 1000):
-    random_image = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
-
+def generate_gradient_image(file_name: str, base_folder: str, original_width: int = 1000, original_height: int = 1000):
+    random_image = np.random.randint(0, 256, (original_height, original_width, 3), dtype=np.uint8)
     img = Image.fromarray(random_image)
     draw = ImageDraw.Draw(img)
 
     shape_size = random.randint(200, 500)
     shape_color = tuple(random.randint(0, 255) for _ in range(3))
-    center_x, center_y = width // 2, height // 2
+    center_x, center_y = original_width // 2, original_height // 2
 
     shape_type = random.choice(['circle', 'square', 'triangle'])
-
     if shape_type == 'circle':
         draw.ellipse(
             [(center_x - shape_size // 2, center_y - shape_size // 2),
@@ -45,7 +43,15 @@ def generate_gradient_image(file_path: str, width: int = 1000, height: int = 100
         ]
         draw.polygon(points, fill=shape_color)
 
-    img.save(file_path, format='PNG')
+    sizes = [(500, 500), (100, 100), (1000, 1000)]
+    for size in sizes:
+        size_folder = os.path.join(base_folder, f"{size[0]}x{size[1]}")
+        os.makedirs(size_folder, exist_ok=True)
+
+        resized_img = img.resize(size, Image.Resampling.LANCZOS)
+
+        resized_img.save(os.path.join(size_folder, f"{file_name}.png"), format='PNG')
+
 
 async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
     categories = db.query(Category).all()
@@ -68,9 +74,10 @@ async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
             product_name = base_name
 
         hashed_name = hash_filename(product_name)
-        photo_path = f"static/images/{hashed_name}.png"
-        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
-        generate_gradient_image(photo_path)
+        photo_folder = f"static/images/"
+        os.makedirs(photo_folder, exist_ok=True)
+
+        generate_gradient_image(hashed_name, photo_folder)
 
         product = Product(
             name=product_name,
@@ -79,7 +86,7 @@ async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
             category_id=fake.random_element(elements=category_ids),
             supplier_id=fake.random_element(elements=supplier_ids),
             quantity=fake.random_number(digits=2),
-            photo_path=photo_path,
+            photo_path=f"{hashed_name}.png"
         )
         products_to_add.append(product)
 

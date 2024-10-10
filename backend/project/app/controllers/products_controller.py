@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 import hashlib
 
 def hash_filename(name: str) -> str:
-    # Generate a SHA-256 hash of the name
     return hashlib.sha256(name.encode()).hexdigest()
 
 def create_product(

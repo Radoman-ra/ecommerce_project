@@ -11,7 +11,7 @@
         <ul v-else class="cart-list">
           <li v-for="item in cartItems" :key="item.id" class="cart-item">
             <img
-              :src="`http://127.0.0.1:8000/image/${item.name}.png`"
+              :src="`http://127.0.0.1:8000/static/images/500x500/${item.photo_path}`"
               alt="Product Image"
               class="cart-image"
             />
@@ -33,7 +33,6 @@
                   @input="handleInput(item)"
                 />
                 <button class="quantity-button" @click="increaseQuantity(item)">+</button>
-                <span v-if="item.availableQuantity < 999">/ {{ item.availableQuantity }}</span>
                 <span v-if="item.quantity >= item.availableQuantity" class="max-quantity-msg">
                   Max available quantity reached
                 </span>

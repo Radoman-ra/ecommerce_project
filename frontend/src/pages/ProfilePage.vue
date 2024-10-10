@@ -204,7 +204,7 @@ export default defineComponent({
 
         product.details = {
           ...productDetails,
-          imageUrl: `http://127.0.0.1:8000/image/${productDetails.name}.png`,
+          imageUrl: `http://127.0.0.1:8000/static/images/100x100/${productDetails.photo_path}`,
           category: categoryDetails,
           supplier: supplierDetails
         }

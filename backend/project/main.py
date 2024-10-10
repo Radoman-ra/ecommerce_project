@@ -38,7 +38,9 @@ app.include_router(categories.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(search.router)
-app.mount("/static/images", StaticFiles(directory="static/images"), name="images")
+app.mount("/static/images/1000x1000", StaticFiles(directory="static/images/1000x1000"), name="images")
+app.mount("/static/images/500x500", StaticFiles(directory="static/images/500x500"), name="images")
+app.mount("/static/images/100x100", StaticFiles(directory="static/images/100x100"), name="images")
 
 
 

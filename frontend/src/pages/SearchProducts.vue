@@ -72,8 +72,9 @@
             >
               <div class="image-container">
                 <img
-                  :src="`http://127.0.0.1:8000/${product.photo_path}`"
+                  :src="loading ? 'https://i.gifer.com/Xqg8.gif' : product.imageUrl"
                   alt="Product Image"
+                  @load="loading = false"
                   class="product-image"
                 />
                 <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
@@ -147,7 +148,13 @@
             >&times;</span
           >
           <div class="modal-main">
-            <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" />
+            <img
+              :src="loading ? 'https://i.gifer.com/Xqg8.gif' : selectedProduct.imageUrl"
+              alt="Product Image"
+              @load="loading = false"
+              class="modal-product-image"
+            />
+            <!-- <img :src="selectedProduct.imageUrl" alt="Product Image" class="modal-product-image" /> -->
             <div class="modal-info">
               <h2 class="modal-title">{{ selectedProduct.name }}</h2>
               <p class="modal-price">${{ selectedProduct.price }}</p>
@@ -200,6 +207,7 @@ export default defineComponent({
   },
   data() {
     return {
+      loading: true,
       productName: '',
       creationDateFrom: '',
       creationDateTo: '',
@@ -261,7 +269,7 @@ export default defineComponent({
           }) => ({
             ...product,
             availableQuantity: product.quantity,
-            imageUrl: `http://127.0.0.1:8000/${product.photo_path}`,
+            imageUrl: `http://127.0.0.1:8000/static/images/1000x1000/${product.photo_path}`,
             description: product.description
           })
         )
@@ -328,7 +336,7 @@ export default defineComponent({
     }) {
       this.selectedProduct = {
         ...product,
-        imageUrl: `http://127.0.0.1:8000/${product.photo_path}`
+        imageUrl: `http://127.0.0.1:8000/static/images/1000x1000/${product.photo_path}`
       }
       this.showModal = true
     },
@@ -463,6 +471,7 @@ body {
 }
 
 .marketplace-container {
+  min-height: 80vh;
   border: 1px solid #ccc;
   border-radius: 20px;
   margin: auto;
@@ -623,6 +632,7 @@ body {
 }
 
 .image-container {
+  min-height: 200px;
   position: relative;
   display: flex;
 }
