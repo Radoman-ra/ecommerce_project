@@ -1,96 +1,135 @@
 <template>
   <div>
-    <div class="header">
-      <div class="auth-buttons">
-        <HomeButtons />
-      </div>
-    </div>
-    <div class="marketplace-container">
-      <div class="filters">
-        <form @submit.prevent="searchProducts" class="search-form">
-          <h2>Search Filters</h2>
-          <input v-model="productName" placeholder="Product Name" class="input-field" />
-          <input
-            v-model="creationDateFrom"
-            placeholder="Creation Date From"
-            type="date"
-            class="input-field"
-          />
-          <input
-            v-model="creationDateTo"
-            placeholder="Creation Date To"
-            type="date"
-            class="input-field"
-          />
-          <input v-model="categoryName" placeholder="Category Name" class="input-field" />
-          <input v-model="supplierName" placeholder="Supplier Name" class="input-field" />
-          <input v-model="minPrice" placeholder="Min Price" type="number" class="input-field" />
-          <input v-model="maxPrice" placeholder="Max Price" type="number" class="input-field" />
-          <label for="limit" class="limit-label">Items per page:</label>
-          <select v-model.number="limit" id="limit" class="input-field">
-            <option :value="5">5</option>
-            <option :value="10">10</option>
-            <option :value="20">20</option>
-            <option :value="30">30</option>
-            <option :value="50">50</option>
-          </select>
-          <button type="submit" class="btn search-btn">Search</button>
-
-          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-        </form>
-      </div>
-
-      <div class="products">
-        <div v-if="products.length && !errorMessage" class="product-grid">
-          <div
-            v-for="product in products"
-            :key="product.id"
-            @click="openModal(product)"
-            class="product-card"
-          >
-            <div class="image-container">
-              <img
-                :src="`http://127.0.0.1:8000/image/${product.name}.png`"
-                alt="Product Image"
-                class="product-image"
-              />
-              <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
-              <span v-if="product.availableQuantity === 0" class="outofstock-tag"
-                >Out of stock</span
-              >
-            </div>
-            <h3 class="product-name">{{ product.name }}</h3>
-            <p class="product-price">${{ product.price }}</p>
-            <div style="display: flex; gap: 8px; justify-content: center"></div>
-          </div>
+    <div>
+      <div class="header">
+        <div class="auth-buttons">
+          <HomeButtons />
         </div>
-        <div class="pagination">
-          <div class="nav-btn-prev">
-            <button @click="goToPage(1)" :disabled="currentPage === 1" class="pagination-btn first">
-              First
-            </button>
-            <button @click="prevPage" :disabled="currentPage === 1" class="pagination-btn prev">
-              &#8592;
-            </button>
-          </div>
-          <div class="nav-page">
-            <label class="pagination-label">{{ currentPage }} / {{ totalPages }}</label>
-          </div>
-          <div class="nav-btn-next">
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              class="pagination-btn next"
+      </div>
+
+      <div class="marketplace-container">
+        <div class="filters">
+          <form class="search-form">
+            <h2>Search Filters</h2>
+            <input
+              v-model="productName"
+              @input="debounceSearchProducts"
+              placeholder="Product Name"
+              class="input-field"
+            />
+            <input
+              v-model="creationDateFrom"
+              @input="debounceSearchProducts"
+              placeholder="Creation Date From"
+              type="date"
+              class="input-field"
+            />
+            <input
+              v-model="creationDateTo"
+              @input="debounceSearchProducts"
+              placeholder="Creation Date To"
+              type="date"
+              class="input-field"
+            />
+            <input
+              v-model="categoryName"
+              @input="debounceSearchProducts"
+              placeholder="Category Name"
+              class="input-field"
+            />
+            <input
+              v-model="supplierName"
+              @input="debounceSearchProducts"
+              placeholder="Supplier Name"
+              class="input-field"
+            />
+            <input
+              v-model="minPrice"
+              @input="debounceSearchProducts"
+              placeholder="Min Price"
+              type="number"
+              class="input-field"
+            />
+            <input
+              v-model="maxPrice"
+              @input="debounceSearchProducts"
+              placeholder="Max Price"
+              type="number"
+              class="input-field"
+            />
+          </form>
+        </div>
+
+        <div class="products">
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+          <div v-if="products.length && !errorMessage" class="product-grid">
+            <div
+              v-for="product in products"
+              :key="product.id"
+              @click="openModal(product)"
+              class="product-card"
             >
-              &rarr;
-            </button>
-            <button
-              @click="goToPage(totalPages)"
-              :disabled="currentPage === totalPages"
-              class="pagination-btn last"
+              <div class="image-container">
+                <img
+                  :src="`http://127.0.0.1:8000/${product.photo_path}`"
+                  alt="Product Image"
+                  class="product-image"
+                />
+                <span v-if="getCartQuantity(product.id) > 0" class="cart-tag">In Cart</span>
+                <span v-if="product.availableQuantity === 0" class="outofstock-tag"
+                  >Out of stock</span
+                >
+              </div>
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-price">${{ product.price }}</p>
+            </div>
+          </div>
+
+          <div v-if="products.length && !errorMessage && totalPages > 1" class="pagination">
+            <select
+              v-model.number="limit"
+              @change="debounceSearchProducts"
+              id="limit"
+              class="input-field"
             >
-              Last
-            </button>
+              <option :value="5">5</option>
+              <option :value="10">10</option>
+              <option :value="20">20</option>
+              <option :value="30">30</option>
+              <option :value="50">50</option>
+            </select>
+            <div class="nav-btn-prev">
+              <button
+                @click="goToPage(1)"
+                :disabled="currentPage === 1"
+                class="pagination-btn first"
+              >
+                First
+              </button>
+              <button @click="prevPage" :disabled="currentPage === 1" class="pagination-btn prev">
+                &#8592;
+              </button>
+            </div>
+            <div class="nav-page">
+              <label class="pagination-label">{{ currentPage }} / {{ totalPages }}</label>
+            </div>
+            <div class="nav-btn-next">
+              <button
+                @click="nextPage"
+                :disabled="currentPage === totalPages"
+                class="pagination-btn next"
+              >
+                &rarr;
+              </button>
+              <button
+                @click="goToPage(totalPages)"
+                :disabled="currentPage === totalPages"
+                class="pagination-btn last"
+              >
+                Last
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -143,9 +182,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive, ref } from 'vue'
 import axios from 'axios'
 import HomeButtons from './HomeButtons.vue'
+
+function debounce(func: Function, wait: number) {
+  let timeout: number | undefined
+  return function (...args: any[]) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func.apply(this, args), wait)
+  }
+}
 
 export default defineComponent({
   components: {
@@ -202,6 +249,7 @@ export default defineComponent({
 
       try {
         const response = await axios.get('http://127.0.0.1:8000/api/search/products', { params })
+
         this.products = response.data.products.map(
           (product: {
             id: number
@@ -213,16 +261,29 @@ export default defineComponent({
           }) => ({
             ...product,
             availableQuantity: product.quantity,
-            imageUrl: `http://127.0.0.1:8000/image/${product.name}.png`,
+            imageUrl: `http://127.0.0.1:8000/${product.photo_path}`,
             description: product.description
           })
         )
         this.totalPages = response.data.total_pages
+        if (!this.products.length) {
+          this.errorMessage = 'No products found matching the criteria'
+        }
       } catch (error: any) {
-        this.errorMessage = 'An error occurred while fetching products'
+        if (error.response && error.response.status === 404) {
+          this.errorMessage = 'No products found matching the criteria'
+          this.products = []
+          this.totalPages = 0
+        } else {
+          this.errorMessage = 'An error occurred while fetching products'
+        }
         console.error('Error fetching products:', error)
       }
     },
+    debounceSearchProducts: debounce(function () {
+      this.searchProducts()
+    }, 500),
+
     async nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
@@ -267,7 +328,7 @@ export default defineComponent({
     }) {
       this.selectedProduct = {
         ...product,
-        imageUrl: `http://127.0.0.1:8000/image/${product.name}.png`
+        imageUrl: `http://127.0.0.1:8000/${product.photo_path}`
       }
       this.showModal = true
     },
@@ -455,11 +516,12 @@ body {
 }
 
 .pagination {
-  margin-top: 10px;
+  padding-top: 10px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding-bottom: 10px;
+  margin-top: auto;
   max-width: 100%;
 }
 
@@ -512,8 +574,15 @@ body {
 }
 
 .error-message {
-  color: red;
+  color: rgb(105, 105, 105);
   font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 .nav-btn-prev,

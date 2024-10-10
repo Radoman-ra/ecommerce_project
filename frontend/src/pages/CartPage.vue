@@ -7,7 +7,7 @@
     </div>
     <div class="cart-container">
       <div class="main-cart">
-        <div v-if="cartItems.length === 0">Your cart is empty.</div>
+        <div v-if="cartItems.length === 0" class="no_items">Your cart is empty.</div>
         <ul v-else class="cart-list">
           <li v-for="item in cartItems" :key="item.id" class="cart-item">
             <img
@@ -17,7 +17,7 @@
             />
             <div class="cart-details">
               <div class="item-name">{{ item.name }}</div>
-              <div class="item-dicription">{{ item.description }}</div>
+              <div class="item-description">{{ item.description }}</div>
 
               <div class="item-price">{{ item.price }}$</div>
               <div class="quantity-controls">
@@ -34,6 +34,9 @@
                 />
                 <button class="quantity-button" @click="increaseQuantity(item)">+</button>
                 <span v-if="item.availableQuantity < 999">/ {{ item.availableQuantity }}</span>
+                <span v-if="item.quantity >= item.availableQuantity" class="max-quantity-msg">
+                  Max available quantity reached
+                </span>
               </div>
             </div>
             <button class="remove-button" @click="removeFromCart(item.id)">&#x274c;</button>
@@ -215,6 +218,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.no_items {
+  color: rgb(105, 105, 105);
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  margin-top: 20px;
+}
+
 .cart-wrapper {
   display: flex;
   flex-direction: column;
@@ -230,6 +241,7 @@ export default defineComponent({
 }
 
 .cart-container {
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -270,10 +282,13 @@ export default defineComponent({
 }
 
 .main-cart {
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  justify-content: center;
+  height: 100%;
 }
 
 input[type='number']::-webkit-outer-spin-button,
@@ -312,6 +327,7 @@ input[type='number']::-webkit-inner-spin-button {
 .quantity-button + {
   margin: 0 5px;
 }
+
 .quantity-button:hover {
   background-color: #cfd7e3;
 }
@@ -394,5 +410,11 @@ input[type='number']::-webkit-inner-spin-button {
   display: flex;
   justify-content: flex-end;
   max-width: 80rem;
+}
+
+.max-quantity-msg {
+  color: rgba(146, 146, 146, 0.53);
+  font-size: 0.9rem;
+  margin-left: 10px;
 }
 </style>

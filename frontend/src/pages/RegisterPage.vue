@@ -2,19 +2,59 @@
   <div class="register-page">
     <form @submit.prevent="register" class="register-form">
       <h2 class="register-text">Register</h2>
-      <input v-model="username" placeholder="Username" required class="input-field" />
-      <input v-model="email" placeholder="Email" type="email" required class="input-field" />
-      <input
-        v-model="password"
-        placeholder="Password"
-        type="password"
-        required
-        class="input-field"
-      />
+
+      <div class="form-group">
+        <input
+          v-model="username"
+          placeholder="Username"
+          required
+          class="input-field"
+          :class="{ 'is-invalid': errors.username }"
+        />
+        <span v-if="errors.username" class="error-text">{{ errors.username }}</span>
+      </div>
+
+      <div class="form-group">
+        <input
+          v-model="email"
+          placeholder="Email"
+          type="email"
+          required
+          class="input-field"
+          :class="{ 'is-invalid': errors.email }"
+        />
+        <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
+      </div>
+
+      <div class="form-group">
+        <input
+          v-model="password"
+          placeholder="Password"
+          type="password"
+          required
+          class="input-field"
+          :class="{ 'is-invalid': errors.password }"
+        />
+        <span v-if="errors.password" class="error-text">{{ errors.password }}</span>
+      </div>
+
+      <div class="form-group">
+        <input
+          v-model="confirmPassword"
+          placeholder="Confirm Password"
+          type="password"
+          required
+          class="input-field"
+          :class="{ 'is-invalid': errors.confirmPassword }"
+        />
+        <span v-if="errors.confirmPassword" class="error-text">{{ errors.confirmPassword }}</span>
+      </div>
+
       <button type="submit" class="btn btn-primary">Register</button>
       <button @click="goToLogin" class="btn btn-secondary">Go to Login</button>
+
+      <p v-if="message">{{ message }}</p>
     </form>
-    <p v-if="message">{{ message }}</p>
   </div>
 </template>
 
@@ -29,7 +69,14 @@ export default defineComponent({
       username: '',
       email: '',
       password: '',
-      message: ''
+      confirmPassword: '',
+      message: '',
+      errors: {
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      }
     }
   },
   setup() {
@@ -37,7 +84,38 @@ export default defineComponent({
     return { router }
   },
   methods: {
+    validateForm() {
+      let valid = true
+      this.errors = { username: '', email: '', password: '', confirmPassword: '' }
+
+      if (this.username.length < 3) {
+        this.errors.username = 'Username must be at least 3 characters long.'
+        valid = false
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailPattern.test(this.email)) {
+        this.errors.email = 'Please enter a valid email address.'
+        valid = false
+      }
+
+      if (this.password.length < 6) {
+        this.errors.password = 'Password must be at least 6 characters long.'
+        valid = false
+      }
+
+      if (this.password !== this.confirmPassword) {
+        this.errors.confirmPassword = 'Passwords do not match.'
+        valid = false
+      }
+
+      return valid
+    },
     async register() {
+      if (!this.validateForm()) {
+        return
+      }
+
       try {
         await axios.post('http://127.0.0.1:8000/api/auth/register', {
           username: this.username,
@@ -89,11 +167,26 @@ export default defineComponent({
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
 .input-field {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 15px;
   width: 200px;
+}
+
+.input-field.is-invalid {
+  border-color: red;
+}
+
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
 }
 
 .btn {

@@ -6,8 +6,9 @@
       </div>
     </div>
     <div class="profile-container">
-      <h1>My Orders</h1>
-      <form class="filter-form" @submit.prevent="fetchOrders">
+      <h1 v-if="orders.length > 0">My Orders</h1>
+      <!-- Display the filter only if there are orders -->
+      <form class="filter-form" v-if="orders.length > 0" @submit.prevent="fetchOrders">
         <div class="order-filter">
           <label for="status">Order Status:</label>
           <select v-model="selectedStatus" class="rounded-input">
@@ -23,6 +24,7 @@
 
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
 
+      <!-- If there are orders, show them; otherwise, show a no orders message -->
       <div v-if="orders.length && !errorMessage" class="orders-list">
         <ul>
           <li v-for="order in orders" :key="order.id" class="order-card">
@@ -74,7 +76,14 @@
           </li>
         </ul>
       </div>
-      <div class="pagination">
+
+      <!-- Display no orders message if the orders list is empty -->
+      <div v-else class="error">
+        <p>You have no orders yet.</p>
+      </div>
+
+      <!-- Pagination only if there are orders -->
+      <div v-if="orders.length > 0" class="pagination">
         <button class="pagination-prev-button" @click="prevPage" :disabled="currentPage === 1">
           &#8592;
         </button>
@@ -140,7 +149,6 @@ export default defineComponent({
     async fetchOrders() {
       let token = this.getCookie('access_token')
       if (!token) {
-        this.errorMessage = 'Authorization token is missing'
         await this.refreshToken()
         token = this.getCookie('access_token')
         if (!token) {
@@ -281,6 +289,18 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.error {
+  color: rgb(105, 105, 105);
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 350px;
+}
 .profile-wrapper {
   display: flex;
   flex-direction: column;
@@ -363,6 +383,7 @@ export default defineComponent({
 }
 
 .profile-container {
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;

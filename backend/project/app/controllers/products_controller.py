@@ -6,7 +6,11 @@ from app.schemas.schemas import ProductCreate, ProductResponse, ProductUpdate
 from app.database.tables import Product
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
+import hashlib
 
+def hash_filename(name: str) -> str:
+    # Generate a SHA-256 hash of the name
+    return hashlib.sha256(name.encode()).hexdigest()
 
 def create_product(
     product_data: ProductCreate,
@@ -18,7 +22,8 @@ def create_product(
     check_admin_privileges(user)
 
     if photo:
-        photo_name = f"{product_data.name}.png"
+        hashed_name = hash_filename(product_data.name)
+        photo_path = f"static/images/{hashed_name}.png"
         os.makedirs(os.path.dirname(photo_path), exist_ok=True)
         with open(photo_path, "wb") as buffer:
             shutil.copyfileobj(photo.file, buffer)
@@ -32,14 +37,12 @@ def create_product(
         category_id=product_data.category_id,
         supplier_id=product_data.supplier_id,
         quantity=product_data.quantity,
-        photo_name=photo_name,
+        photo_path=photo_path,
     )
     db.add(product)
     db.commit()
     db.refresh(product)
     return ProductResponse.from_orm(product)
-
-
 
 def update_product(
     product_id: int,
@@ -59,6 +62,9 @@ def update_product(
 
     if product_data.name is not None:
         product.name = product_data.name
+        # Update the hashed filename if the name has changed
+        hashed_name = hash_filename(product_data.name)
+        product.photo_path = f"static/images/{hashed_name}.png"
 
     if product_data.description is not None:
         product.description = product_data.description
@@ -73,7 +79,6 @@ def update_product(
     db.refresh(product)
 
     return ProductResponse.from_orm(product)
-
 
 def delete_product(
     product_id: int,

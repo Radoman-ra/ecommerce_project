@@ -6,21 +6,46 @@ from PIL import Image, ImageDraw
 import os
 import random
 import numpy as np
+import hashlib
 
 fake = Faker()
 
+def hash_filename(name: str) -> str:
+    return hashlib.sha256(name.encode()).hexdigest()
+
 def generate_gradient_image(file_path: str, width: int = 1000, height: int = 1000):
-    # Create a NumPy array of shape (height, width, 3) with random RGB values
     random_image = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
-    
-    # Convert the NumPy array to a PIL image
+
     img = Image.fromarray(random_image)
+    draw = ImageDraw.Draw(img)
+
+    shape_size = random.randint(200, 500)
+    shape_color = tuple(random.randint(0, 255) for _ in range(3))
+    center_x, center_y = width // 2, height // 2
+
+    shape_type = random.choice(['circle', 'square', 'triangle'])
+
+    if shape_type == 'circle':
+        draw.ellipse(
+            [(center_x - shape_size // 2, center_y - shape_size // 2),
+             (center_x + shape_size // 2, center_y + shape_size // 2)],
+            fill=shape_color
+        )
+    elif shape_type == 'square':
+        draw.rectangle(
+            [(center_x - shape_size // 2, center_y - shape_size // 2),
+             (center_x + shape_size // 2, center_y + shape_size // 2)],
+            fill=shape_color
+        )
+    elif shape_type == 'triangle':
+        points = [
+            (center_x, center_y - shape_size // 2),
+            (center_x - shape_size // 2, center_y + shape_size // 2),
+            (center_x + shape_size // 2, center_y + shape_size // 2)
+        ]
+        draw.polygon(points, fill=shape_color)
 
     img.save(file_path, format='PNG')
-
-
-
-    
 
 async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
     categories = db.query(Category).all()
@@ -42,7 +67,8 @@ async def seed_products(db: Session, num_products: int, batch_size: int = 1000):
             name_count[base_name] = 1
             product_name = base_name
 
-        photo_path = f"static/images/{product_name}.png"
+        hashed_name = hash_filename(product_name)
+        photo_path = f"static/images/{hashed_name}.png"
         os.makedirs(os.path.dirname(photo_path), exist_ok=True)
         generate_gradient_image(photo_path)
 

@@ -2,17 +2,32 @@
   <div class="login-page">
     <form @submit.prevent="login" class="login-form">
       <div class="login-text">Login</div>
-      <input v-model="email" placeholder="Email" required class="input-field" />
+
+      <input
+        v-model="email"
+        placeholder="Email"
+        required
+        class="input-field"
+        :class="{ 'input-error': emailError }"
+      />
+      <div v-if="emailError" class="error-message">{{ emailError }}</div>
+
       <input
         v-model="password"
         type="password"
         placeholder="Password"
         required
         class="input-field"
+        :class="{ 'input-error': passwordError }"
       />
-      <button type="submit" class="btn btn-login">Login</button>
+      <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
+
+      <button type="submit" class="btn btn-login" :disabled="isSubmitting">Login</button>
       <button type="button" class="btn btn-register" @click="goToRegister">Register</button>
-      <div v-if="loginError" class="error">{{ loginError }}</div>
+
+      <transition name="fade">
+        <div v-if="loginError" class="login-error">{{ loginError }}</div>
+      </transition>
     </form>
   </div>
 </template>
@@ -27,13 +42,39 @@ export default defineComponent({
   setup() {
     const email = ref('')
     const password = ref('')
+    const emailError = ref('')
+    const passwordError = ref('')
     const loginError = ref('')
+    const isSubmitting = ref(false)
     const router = useRouter()
 
     const ACCESS_TOKEN_EXPIRE_MINUTES = 15
     const REFRESH_TOKEN_EXPIRE_DAYS = 7
 
+    const validateInputs = (): boolean => {
+      emailError.value = ''
+      passwordError.value = ''
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      let isValid = true
+
+      if (!emailPattern.test(email.value)) {
+        emailError.value = 'Please enter a valid email.'
+        isValid = false
+      }
+
+      if (password.value.length < 6) {
+        passwordError.value = 'Password must be at least 6 characters long.'
+        isValid = false
+      }
+
+      return isValid
+    }
+
     const login = async () => {
+      if (!validateInputs()) return
+
+      isSubmitting.value = true
       try {
         const response = await axios.post('http://127.0.0.1:8000/api/auth/login', {
           email: email.value,
@@ -60,19 +101,24 @@ export default defineComponent({
           loginError.value = 'An error occurred. Please try again.'
         }
         console.error('Login failed:', error)
+      } finally {
+        isSubmitting.value = false
       }
     }
 
     const goToRegister = () => {
-      router.push('/register') // Redirect to the register page
+      router.push('/register')
     }
 
     return {
       email,
       password,
+      emailError,
+      passwordError,
       login,
-      goToRegister, // Add this to handle register button click
-      loginError
+      goToRegister,
+      loginError,
+      isSubmitting
     }
   }
 })
@@ -89,6 +135,7 @@ export default defineComponent({
 }
 
 .login-form {
+  max-width: 220px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -105,6 +152,15 @@ export default defineComponent({
   width: 200px;
 }
 
+.input-error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+}
+
 .btn {
   padding: 10px 20px;
   border: none;
@@ -118,7 +174,12 @@ export default defineComponent({
   color: white;
 }
 
-.btn-login:hover {
+.btn-login:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+.btn-login:hover:enabled {
   background-color: #0056b3;
 }
 
@@ -131,13 +192,32 @@ export default defineComponent({
   background-color: #5a6268;
 }
 
-.error {
-  color: red;
+.login-error {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
   margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  animation: fade-in 0.5s;
 }
 
-.login-text {
-  font-size: 24px;
-  font-weight: 500;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

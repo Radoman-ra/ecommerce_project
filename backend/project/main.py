@@ -38,7 +38,7 @@ app.include_router(categories.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(search.router)
-app.mount("/image", StaticFiles(directory="static/images"), name="images")
+app.mount("/static/images", StaticFiles(directory="static/images"), name="images")
 
 
 
