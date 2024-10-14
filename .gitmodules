@@ -1,0 +1,7 @@
+[submodule "ecommerce_project"]
+[submodule "ecom_backend"]
+	path = ecom_backend
+	url = https://github.com/Radoman-ra/ecom_backend
+[submodule "ecom_frontend"]
+	path = ecom_frontend
+	url = https://github.com/Radoman-ra/ecom_frontend
