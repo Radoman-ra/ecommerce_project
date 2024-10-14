@@ -1,11 +1,11 @@
 # To DO
 
-- [ ] put loading
-- [ ] images 10x10
+- [x] images 10x10
 - [ ] loading in product details
 - [ ] lazy loading
 - [ ] separate project in folders
 - [ ] auth in separate file
+- [ ] production docker
 
 ## DONE
 
@@ -17,11 +17,11 @@
 
 ---
 
-- [x] fix ui cart (from site, send to Vlad)
-- [x] fix ui order details (from site, send to Vlad)
+- [x] fix ui cart
+- [x] fix ui order details
 - [x] fix ui login
 - [x] fix ui register
-- [x] fix ui profile (from site, send to Vlad)
+- [x] fix ui profile
 - [x] less color buttons
 
 ---
