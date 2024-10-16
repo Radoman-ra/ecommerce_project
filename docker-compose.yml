@@ -36,7 +36,7 @@ services:
       - ./ecom_frontend/:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - "4173:4173"
     depends_on:
       - backend
 
