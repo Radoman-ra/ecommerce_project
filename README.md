@@ -1,132 +1,99 @@
-### Project Overview
+# E-Commerce Product Management
 
-#### How to run
+This project provides a convenient platform for browsing, purchasing, and managing products in an online store.
 
-```
-cd project/app
-docker-compose up -d --build
-python seeders.py
-```
+## Key Features
 
-#### Project Title: **E-Commerce Product Management API**
+- **FastAPI**: A modern and efficient framework for building RESTful APIs.
+- **JWT Authentication**: Secure protected endpoints and manage user sessions.
+- **Google OAuth**: Sign in with your Google account for a seamless login experience.
+- **MySQL**: Relational database for storing products, orders, and user information.
+- **Docker + Docker Compose**: Simplified build and deployment using containers.
+- **Swagger**: Automatic documentation (available at `/docs`) for easy testing and integration.
 
-This project aims to build a RESTful API for managing an e-commerce product catalog. The API will be developed using FastAPI and will interact with a MySQL database deployed via Docker. The API will enable users to perform CRUD operations on products, categories, suppliers, and customer orders. It will also include user authentication using JWT (JSON Web Tokens) to secure certain endpoints.
+---
 
-The project is designed to evaluate the candidate’s ability to write complex SQL queries, especially involving JOINs, and their experience with FastAPI, JWT-based authentication, and handling a MySQL database.
+## How to Run
 
-### Requirements
+1. **Navigate to the project directory**
 
-#### 1. **Project Stack:**
+   ```bash
+   cd project/app
+   ```
 
-- **API Framework:** FastAPI
-- **Database:** MySQL (Dockerized)
-- **Authentication:** JWT
-- **Documentation:** Swagger (integrated with FastAPI)
+2. **Build and start Docker Compose**
 
-#### 2. **Database Schema:**
+   ```bash
+   docker-compose up -d --build
+   ```
 
-The MySQL database should include at least five tables, with the following suggested structure:
+3. **Seed the database**
 
-1. **Users** (for storing user details)
+   ```bash
+   python seeders.py
+   ```
 
-- `id` (Primary Key)
-- `username`
-- `password_hash`
-- `email`
-- `is_admin` (Boolean to denote admin users)
+4. **Open the application in your browser**
+   - The application is available at [http://localhost:4173](http://localhost:4173)
+   - API documentation is available at [http://localhost:8000/docs](http://localhost:8000/docs)
 
-2. **Products**
+---
 
-- `id` (Primary Key)
-- `name`
-- `description`
-- `price`
-- `creation_date` (Timestamp): Automatically set when a new product is added.
-- `category_id` (Foreign Key to Categories)
-- `supplier_id` (Foreign Key to Suppliers)
+## Example .env File
 
-3. **Categories**
-
-- `id` (Primary Key)
-- `name`
-- `description`
-
-4. **Suppliers**
-
-- `id` (Primary Key)
-- `name`
-- `contact_email`
-- `phone_number`
-
-5. **Orders**
-
-- `id` (Primary Key)
-- `user_id` (Foreign Key to Users)
-- `product_id` (Foreign Key to Products)
-- `quantity`
-- `order_date`
-- `status` (e.g., Pending, Shipped, Delivered, Cancelled)
-
-#### 3. **Endpoints:**
-
-The API should include the following endpoints:
-
-1. **User Authentication:**
-
-- `POST /auth/login` endpoint should authenticate a user, return a JWT tokens in the response body, and also set the JWT token as a cookie.
-- `POST /auth/logout` endpoint that clears the JWT cookies, effectively logging the user out by invalidating the session.
-- `POST /auth/register` Registers a new user in the system.
-
-2. **User Management:**
-
-- `GET /users/me`: Retrieve the current user’s details (requires JWT).
-- `GET /users/{id}`: Retrieve details of a specific user (Admin only, requires JWT).
-
-3. **Product Management:**
-
-- `GET /products/`: Retrieve a list of products, optionally filtered by category or supplier.
-- `GET /products/{id}`: Retrieve details of a specific product.
-- `POST /products/`: Create a new product (Admin only, requires JWT).
-- `PUT /products/{id}`: Update an existing product (Admin only, requires JWT).
-- `DELETE /products/{id}`: Delete a product (Admin only, requires JWT).
-
-4. **Category Management:**
-
-- `GET /categories/`: Retrieve a list of product categories.
-- `POST /categories/`: Create a new category (Admin only, requires JWT).
-
-5. **Supplier Management:**
-
-- `GET /suppliers/`: Retrieve a list of suppliers.
-- `POST /suppliers/`: Create a new supplier (Admin only, requires JWT).
-
-6. **Order Management:**
-
-- `GET /orders/`: Retrieve a list of orders (Admin only, requires JWT).
-- `GET /orders/{id}`: Retrieve details of a specific order (requires JWT).
-- `POST /orders/`: Create a new order (requires JWT).
-- `PUT /orders/{id}`: Update the status of an order (Admin only, requires JWT).
-
-7. **Search:**
-
-- `GET /search/`:
-  Implement an endpoint to search across products, categories, and suppliers using a query parameter. The search functionality should support the following criteria:
-  - **Product Name:** Search by product name.
-  - **Product Creation Date:** Filter products by their creation date.
-  - **Product Price:** Search for products within a specific price range.
-  - **Category Name:** Search by the name of the product's category.
-  - **Supplier Name:** Search by the name of the supplier.
-- **Indexing for Quick Search:**
-  To ensure efficient querying, appropriate indexes must be created.
-
-#### 4. **Key Assessment Criteria:**
-
-- Ability to write and optimize complex SQL queries, especially those involving multiple JOINs.
-- Proper use of FastAPI to create a RESTful API with well-structured endpoints.
-- Implementation of JWT authentication to secure sensitive endpoints.
-- Deployment and interaction with a MySQL database using Docker.
-- Clear API documentation using Swagger.
+Place the `.env` file in the same folder as `docker-compose.yml`:
 
 ```
+MYSQL_PASSWORD=qwerty
+MYSQL_DATABASE=ecom
+MYSQL_USER=mysql
+MYSQL_HOST=db
+MYSQL_PORT=3306
+MYSQL_ROOT_PASSWORD=qwerty
 
+VITE_BACKEND_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:4173
+
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
+SESSION_SECRET_KEY=supersecretkey
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
 ```
+
+> **Note**: Adjust any values as needed to fit your environment.
+
+---
+
+## Technologies Used
+
+- **FastAPI** (Python 3.9+)
+- **MySQL**
+- **Docker + Docker Compose**
+- **JWT (JSON Web Tokens)**
+- **Google OAuth**
+- **Swagger** for API documentation
+
+---
+
+## Screenshots
+
+Below is a quick preview of the interface (images are displayed at a reduced size):
+
+**Home Page**  
+<img src="pictures/home_page.png" alt="Home Page" width="300" />
+
+**Cart Page**  
+<img src="pictures/cart_page.png" alt="Cart Page" width="300" />
+
+**Profile Page**  
+<img src="pictures/profile_page.png" alt="Profile Page" width="300" />
+
+**Register Page**  
+<img src="pictures/register_page.png" alt="Register Page" width="300" />
+
+**Swagger Documentation**  
+<img src="pictures/swagger_page.png" alt="Swagger Page" width="300" />
+
+---
+
+Enjoy managing and shopping with our E-Commerce Product Management platform!
