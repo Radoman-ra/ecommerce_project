@@ -21,19 +21,25 @@ This project provides a convenient platform for browsing, purchasing, and managi
    cd project/app
    ```
 
-2. **Build and start Docker Compose**
+1.1.  **download modules**
+
+   ```git
+   git submodule update --init --recursive
+   ```
+
+3. **Build and start Docker Compose**
 
    ```bash
    docker-compose up -d --build
    ```
 
-3. **Seed the database**
+4. **Seed the database**
 
    ```bash
    python seeders.py
    ```
 
-4. **Open the application in your browser**
+5. **Open the application in your browser**
    - The application is available at [http://localhost:4173](http://localhost:4173)
    - API documentation is available at [http://localhost:8000/docs](http://localhost:8000/docs)
 
