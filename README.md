@@ -131,7 +131,7 @@ erDiagram
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-org>/ecommerce_project.git
+git clone https://github.com/Radoman-ra/ecommerce_project.git
 cd ecommerce_project
 ```
 
